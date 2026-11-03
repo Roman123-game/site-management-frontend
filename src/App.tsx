@@ -82,7 +82,7 @@ export default function App() {
           <div className="site-map" ref={mapRef} onPointerUp={()=>{dragging.current=null;}} onPointerLeave={()=>{dragging.current=null;}}>
             <div className="map-grid"/>
             <div className="map-label map-label-north">N <b>↑</b></div>
-            <div className="map-road road-horizontal"><span>ACCESS ROAD</span></div><div className="map-road road-vertical"/>
+            <div className="map-road road-horizontal"><span></span></div><div className="map-road road-vertical"/>
             <div className="tool-buildings">
               <div className="building building-one"><b>Tool 01</b><div className="building-windows"><i/><i/><i/></div></div>
               <div className="building building-one"><b>Tool 02</b><div className="building-windows"><i/><i/><i/></div></div>
