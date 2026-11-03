@@ -64,11 +64,11 @@ export default function App() {
       <div className="sidebar-spacer"/>
       <div className="site-card"><div className="site-card-icon"><MapPin size={17}/></div><div><strong>North District Site</strong><span>Project · ND-024</span></div><MoreHorizontal size={18} className="muted-icon"/></div>
       <button className="nav-item muted-nav" onClick={()=>setShowGuide(true)}><Settings2 size={18}/>Settings</button>
-      <div className="profile"><div className="avatar manager">RM</div><div className="profile-copy"><strong>R. Manager</strong><span>Site manager</span></div></div>
+      <div className="profile"><div className="avatar manager">M</div><div className="profile-copy"><strong>Manager</strong><span>Site manager</span></div></div>
     </aside>
 
     <main className="main-content">
-      <header className="topbar"><div className="breadcrumbs"><span>Projects</span><span className="crumb-slash">/</span><strong>North District Site</strong></div><div className="topbar-right"><div className="live-indicator"><span/>Local workspace</div><button className="icon-button" aria-label="Help" onClick={()=>setShowGuide(true)}><CircleHelp size={19}/></button><div className="avatar manager top-avatar">RM</div></div></header>
+      <header className="topbar"><div className="breadcrumbs"><span>Projects</span><span className="crumb-slash">/</span><strong>North District Site</strong></div><div className="topbar-right"><div className="live-indicator"><span/>Local workspace</div><button className="icon-button" aria-label="Help" onClick={()=>setShowGuide(true)}><CircleHelp size={19}/></button><div className="avatar manager top-avatar">M</div></div></header>
       <section className="page-heading"><div><div className="eyebrow"><span className="eyebrow-dot"/>PROJECT OVERVIEW</div><h1>Site workforce</h1><p>Monitor your team and manage assignments across the site.</p></div><button className="primary-button" onClick={()=>setShowAdd(true)}><Plus size={17}/>Add employee</button></section>
 
       <section className="stats-grid" aria-label="Employee status summary">
