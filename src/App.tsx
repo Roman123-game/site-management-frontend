@@ -83,7 +83,11 @@ export default function App() {
             <div className="map-grid"/>
             <div className="map-label map-label-north">N <b>↑</b></div>
             <div className="map-road road-horizontal"><span>ACCESS ROAD</span></div><div className="map-road road-vertical"/>
-            <div className="building building-one"><b>BUILDING 01</b><div className="building-windows"><i/><i/><i/></div></div>
+            <div className="tool-buildings">
+              <div className="building building-one"><b>Tool 01</b><div className="building-windows"><i/><i/><i/></div></div>
+              <div className="building building-one"><b>Tool 02</b><div className="building-windows"><i/><i/><i/></div></div>
+              <div className="building building-one"><b>Tool 03</b><div className="building-windows"><i/><i/><i/></div></div>
+            </div>
             <div className="building building-two"><b>WORKSHOP</b><div className="building-windows"><i/><i/></div></div>
             <div className="storage-yard"><div/><div/><div/><span>MATERIAL STORAGE</span></div>
             {visible.map(e=><button key={e.id} className={`employee-marker ${selectedId===e.id?"selected":""}`} style={{left:`${e.x}%`,top:`${e.y}%`,"--marker-color":STATUS_META[e.status].color} as CSSProperties} onPointerDown={event=>{event.preventDefault();dragging.current=e.id;setSelectedId(e.id);event.currentTarget.setPointerCapture(event.pointerId);}} onPointerMove={moveMarker} onPointerUp={()=>{dragging.current=null;}} onClick={()=>setSelectedId(e.id)} title={`${e.name} · ${STATUS_META[e.status].label}`}><span>{initials(e.name)}</span><small>{STATUS_META[e.status].label}</small></button>)}
