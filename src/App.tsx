@@ -92,10 +92,14 @@ export default function App() {
               <div className="building building-one"><b>Tool 02</b><div className="building-windows"><i/><i/><i/></div></div>
               <div className="building building-one"><b>Tool 03</b><div className="building-windows"><i/><i/><i/></div></div>
             </div>
-            <div className="tool-buildings tool-buildings-right">
+            <div className="tool-buildings tool-buildings-right tool-buildings-room-two">
               <div className="building building-one"><b>Tool 01</b><div className="building-windows"><i/><i/><i/></div></div>
               <div className="building building-one"><b>Tool 02</b><div className="building-windows"><i/><i/><i/></div></div>
               <div className="building building-one"><b>Tool 03</b><div className="building-windows"><i/><i/><i/></div></div>
+            </div>
+            <div className="tool-buildings tool-buildings-room-two-bottom">
+              <div className="building building-one"><b>Tool 04</b><div className="building-windows"><i/><i/><i/></div></div>
+              <div className="building building-one"><b>Tool 05</b><div className="building-windows"><i/><i/><i/></div></div>
             </div>
             <div className="tool-buildings tool-buildings-storage">
               <div className="building building-one"><b>Tool 01</b><div className="building-windows"><i/><i/><i/></div></div>
