@@ -14,10 +14,10 @@
     gap:8px;
     z-index:2}
     .tool-buildings-right{left:57%}
-    .tool-buildings-room-two{top:14%}
+    .tool-buildings-room-two{top:9%}
     .tool-buildings-room-two-bottom
     {left:calc(62.833333% + 1.333px);
-    top:32%;width:calc(23.333333% - 2.667px);
+    top:31%;width:calc(23.333333% - 2.667px);
     height:18%;display:flex;gap:8px;z-index:2}
     .tool-buildings-storage{left:57%;top:66%;bottom:auto}
         .tool-buildings 
