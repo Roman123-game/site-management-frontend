@@ -24,6 +24,6 @@
         .building-one{position:relative;left:auto;top:auto;width:auto;height:100%;flex:1;min-width:0;min-height:0;padding:6px}
         .map-room{position:absolute;z-index:3;padding:0;pointer-events:none}
         .map-room span{position:absolute;top:8px;left:8px;white-space:nowrap;font-size:9px;letter-spacing:1px;font-weight:700;color:#81927f}
-        .room-one{left:4%;top:9%;width:40%;height:29%}
-        .room-two{left:54%;top:9%;width:40%;height:29%}
-        .room-three{left:54%;top:61%;width:40%;height:29%}
+        .room-one{left:1%;top:1%;width:40%;height:29%}
+        .room-two{left:52%;top:1%;width:40%;height:29%}
+        .room-three{left:52%;top:58%;width:40%;height:29%}
