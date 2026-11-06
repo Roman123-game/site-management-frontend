@@ -28,3 +28,13 @@
         .room-two{left:52%;top:1%;width:40%;height:29%}
         .room-three{left:52%;top:58%;width:40%;height:29%}
         .tool-buildings .building{border-radius:8px}
+.tool-buildings .building:focus-visible{outline:2px solid #2866dc;outline-offset:2px}
+.modal textarea{width:100%;min-height:90px;max-height:240px;resize:vertical;border:1px solid #e2e7ee;border-radius:6px;background:#fff;padding:9px;color:#344054;font:400 11px/1.5 "DM Sans",sans-serif;outline:none}
+.modal textarea:focus{border-color:#7ba4ed;box-shadow:0 0 0 3px #2866dc12}
+.tool-task-list{display:flex;flex-direction:column;gap:6px;max-height:min(50vh,340px);overflow-y:auto;padding:2px}
+.tool-task-option{min-height:40px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 11px;border:1px solid #e8ecf1;border-radius:7px;background:#fff;color:#344054;text-align:left;font-size:12px}
+.tool-task-option:hover{border-color:#9dbcf4;background:#f8faff}
+.tool-task-option.current-tool-task{border-color:#a9c4f4;background:#f2f6ff;color:#2459ac}
+.current-task-label{flex-shrink:0;color:#6b83a8;font-size:8px;font-weight:700;letter-spacing:.8px}
+.remove-task-button{margin-right:auto;min-height:38px;padding:0 12px;border:1px solid #f0dada;border-radius:8px;background:#fff;color:#b54747;font-size:12px;font-weight:600}
+.remove-task-button:hover{background:#fff5f5;border-color:#e8bcbc}
