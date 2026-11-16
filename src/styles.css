@@ -78,7 +78,7 @@ button{cursor:pointer}
     {top:0%;gap:5px}
     .tool-buildings-room-two-bottom
     {left:calc(62.833333% + 1.333px);
-    top:21%;width:calc(23.333333% - 2.667px);
+    top:19%;width:calc(23.333333% - 2.667px);
     height:18%;display:flex;gap:5px;z-index:2}
     .tool-buildings-storage{left:auto;right:8%;top:calc(43.8% - 16px);bottom:auto;flex-direction:column}
         .tool-buildings 
