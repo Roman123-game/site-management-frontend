@@ -65,7 +65,7 @@ button{cursor:pointer}
 .tool-buildings
 {position:absolute;
     left:7%;
-    top:16%;
+    top:6%;
     width:35%;
     height:18%;
     display:flex;
@@ -75,10 +75,10 @@ button{cursor:pointer}
     .tool-buildings-right
     {left:57%}
     .tool-buildings-room-two
-    {top:9%;gap:5px}
+    {top:0%;gap:5px}
     .tool-buildings-room-two-bottom
     {left:calc(62.833333% + 1.333px);
-    top:31%;width:calc(23.333333% - 2.667px);
+    top:21%;width:calc(23.333333% - 2.667px);
     height:18%;display:flex;gap:5px;z-index:2}
     .tool-buildings-storage{left:auto;right:8%;top:calc(43.8% - 16px);bottom:auto;flex-direction:column}
         .tool-buildings 
