@@ -101,3 +101,7 @@ button{cursor:pointer}
 .current-task-label{flex-shrink:0;color:#6b83a8;font-size:8px;font-weight:700;letter-spacing:.8px}
 .remove-task-button{margin-right:auto;min-height:38px;padding:0 12px;border:1px solid #f0dada;border-radius:8px;background:#fff;color:#b54747;font-size:12px;font-weight:600}
 .remove-task-button:hover{background:#fff5f5;border-color:#e8bcbc}
+.map-layout,.site-map{min-height:600px}
+.tool-buildings,.tool-buildings-room-two-bottom{height:86.4px}
+@media(max-width:850px){.tool-buildings,.tool-buildings-room-two-bottom{height:77.4px}}
+@media(max-width:560px){.tool-buildings,.tool-buildings-room-two-bottom{height:70.2px}}
