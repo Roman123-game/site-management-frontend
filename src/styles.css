@@ -80,7 +80,7 @@ button{cursor:pointer}
     {left:calc(62.833333% + 1.333px);
     top:19%;width:calc(23.333333% - 2.667px);
     height:18%;display:flex;gap:5px;z-index:2}
-    .tool-buildings-storage{left:auto;right:8%;top:calc(49.8% - 16px);bottom:auto;flex-direction:column}
+    .tool-buildings-storage{left:auto;right:13%;top:calc(54.8% - 16px);bottom:auto;flex-direction:column}
         .tool-buildings 
         .building-one{position:relative;left:auto;top:auto;width:auto;height:80%;align-self:center;flex:1;min-width:0;min-height:0;padding:6px}
     .tool-buildings-storage .building-one{width:calc(33.333333% - 5.333333px);height:80%;flex:0 0 80%;align-self:flex-end}
@@ -88,7 +88,7 @@ button{cursor:pointer}
         .map-room span{position:absolute;top:8px;left:8px;white-space:nowrap;font-size:9px;letter-spacing:1px;font-weight:700;color:#81927f}
         .room-one{left:1%;top:1%;width:40%;height:29%}
         .room-two{left:52%;top:1%;width:40%;height:29%}
-        .room-three{left:52%;top:calc(43.8% - 16px);width:40%;height:calc(49.2% + 16px)}
+        .room-three{left:52%;top:calc(43.8% - 16px);width:40%;height:calc(54.2% + 16px)}
         .tool-buildings .building{border-radius:8px}
 .tool-buildings .building:focus-visible{outline:2px solid #2866dc;outline-offset:2px}
 .modal textarea{width:100%;min-height:90px;max-height:240px;resize:vertical;border:1px solid #e2e7ee;border-radius:6px;background:#fff;padding:9px;color:#344054;font:400 11px/1.5 "DM Sans",sans-serif;outline:none}
