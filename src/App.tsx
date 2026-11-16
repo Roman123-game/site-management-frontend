@@ -129,7 +129,7 @@ export default function App() {
            
             <div className="map-room room-three"><span>ROOM 3</span></div>
             <div className="map-label map-label-north">N <b>↑</b></div>
-            <div className="map-road road-horizontal"><span></span></div><div className="map-road road-vertical"/>
+            <div className="map-road road-horizontal"><span></span></div><div className="map-road road-horizontal road-horizontal-top"><span></span></div><div className="map-road road-vertical"/>
             <div className="map-room room-two"><span>ROOM 2</span></div>
             {TOOL_GROUPS.map(group=><div key={group.className} className={group.className}>{group.tools.map(tool=><button type="button" key={tool.id} className="building building-one" onClick={()=>openTool(tool,group.location)} aria-label={`Edit ${tool.name} task in ${group.location}`} title={`${tool.name}: ${toolTasks[tool.id]}`}><b>{tool.name}</b><div className="building-windows"><i/><i/><i/></div></button>)}</div>)}
             {visible.map(e=><button key={e.id} className={`employee-marker ${selectedId===e.id?"selected":""}`} style={{left:`${e.x}%`,top:`${e.y}%`,"--marker-color":STATUS_META[e.status].color} as CSSProperties} onPointerDown={event=>{event.preventDefault();dragging.current=e.id;setSelectedId(e.id);event.currentTarget.setPointerCapture(event.pointerId);}} onPointerMove={moveMarker} onPointerUp={()=>{dragging.current=null;}} onClick={()=>setSelectedId(e.id)} title={`${e.name} · ${STATUS_META[e.status].label}`}><span>{initials(e.name)}</span><small>{STATUS_META[e.status].label}</small></button>)}
