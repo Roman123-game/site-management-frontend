@@ -1,4 +1,4 @@
-export type EmployeeStatus = "install" | "repair" | "upgrade" | "call-support" | "free";
+export type EmployeeStatus = "install" | "repair" | "upgrade" | "remote" | "free";
 export interface Employee {
   id: string; name: string; role: string; status: EmployeeStatus;
   x: number; y: number; task: string; phone: string;
@@ -7,7 +7,7 @@ export const STATUS_META: Record<EmployeeStatus, {label:string;color:string;soft
   install:{label:"Install",color:"#3b82f6",soft:"#eaf2ff"},
   repair:{label:"Repair",color:"#f59e0b",soft:"#fff5df"},
   upgrade:{label:"Upgrade",color:"#8b5cf6",soft:"#f2edff"},
-  "call-support":{label:"Call support",color:"#ef4444",soft:"#feecec"},
+  remote:{label:"Remote",color:"#ef4444",soft:"#feecec"},
   free:{label:"Free",color:"#10a779",soft:"#e5f7f0"}
 };
 export const DEFAULT_EMPLOYEES: Employee[] = [

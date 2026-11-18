@@ -6,9 +6,10 @@ import type { Employee, EmployeeStatus } from "./types";
 
 const KEY = "fieldboard-employees-v1";
 const TOOL_TASKS_KEY = "fieldboard-tool-tasks-v1";
-const STATUSES: EmployeeStatus[] = ["install", "repair", "upgrade", "call-support", "free"];
+const STATUSES: EmployeeStatus[] = ["install", "repair", "upgrade", "remote", "free"];
 const TASK_OPTIONS = ["Install door", "Upgrade controller", "Inspect wiring", "Replace lighting", "Test access panel", "Check emergency exit", "Install safety signage", "Inspect network cabinet", "Inventory spare parts", "Service power tools", "Check controller stock"];
 type SiteTool = { id: string; name: string; task: string };
+type StoredEmployee = Omit<Employee, "status"> & { status: EmployeeStatus | "call-support" };
 const TOOL_GROUPS: { className: string; location: string; tools: SiteTool[] }[] = [
   { className: "tool-buildings", location: "west area", tools: [{ id: "site-a-01", name: "Tool 01", task: "Install door" }, { id: "site-a-02", name: "Tool 02", task: "Upgrade controller" }, { id: "site-a-03", name: "Tool 03", task: "Inspect wiring" }] },
   { className: "tool-buildings tool-buildings-right tool-buildings-room-two", location: "east area", tools: [{ id: "site-b-01", name: "Tool 01", task: "Replace lighting" }, { id: "site-b-02", name: "Tool 02", task: "Test access panel" }, { id: "site-b-03", name: "Tool 03", task: "Check emergency exit" }] },
@@ -16,7 +17,11 @@ const TOOL_GROUPS: { className: string; location: string; tools: SiteTool[] }[] 
   { className: "tool-buildings tool-buildings-storage", location: "storage area", tools: [{ id: "storage-01", name: "Tool 01", task: "Inventory spare parts" }, { id: "storage-02", name: "Tool 02", task: "Service power tools" }, { id: "storage-03", name: "Tool 03", task: "Check controller stock" }] }
 ];
 function loadEmployees(): Employee[] {
-  try { const raw = localStorage.getItem(KEY); return raw ? JSON.parse(raw) as Employee[] : DEFAULT_EMPLOYEES; }
+  try {
+    const raw = localStorage.getItem(KEY);
+    const employees = raw ? JSON.parse(raw) as StoredEmployee[] : DEFAULT_EMPLOYEES;
+    return employees.map(({status,...employee})=>({...employee,status:status==="call-support"?"remote":status}));
+  }
   catch { return DEFAULT_EMPLOYEES; }
 }
 function loadToolTasks(): Record<string, string> {
@@ -57,7 +62,7 @@ export default function App() {
     install:employees.filter(e=>e.status==="install").length,
     repair:employees.filter(e=>e.status==="repair").length,
     upgrade:employees.filter(e=>e.status==="upgrade").length,
-    "call-support":employees.filter(e=>e.status==="call-support").length,
+    remote:employees.filter(e=>e.status==="remote").length,
     free:employees.filter(e=>e.status==="free").length
   }),[employees]);
   const visible = employees.filter(e => (filter==="all"||e.status===filter) && (!search.trim()||[e.name,e.role,e.task].some(v=>v.toLowerCase().includes(search.toLowerCase()))));
@@ -136,7 +141,7 @@ export default function App() {
             {TOOL_GROUPS.map(group=><div key={group.className} className={group.className}>{group.tools.map(tool=><button type="button" key={tool.id} className="building building-one" onClick={()=>openTool(tool,group.location)} aria-label={`Edit ${tool.name} task in ${group.location}`} title={`${tool.name}: ${toolTasks[tool.id]}`}><b>{tool.name}</b><div className="building-windows"><i/><i/><i/></div></button>)}</div>)}
             {visible.map(e=><button key={e.id} className={`employee-marker ${selectedId===e.id?"selected":""}`} style={{left:`${e.x}%`,top:`${e.y}%`,"--marker-color":STATUS_META[e.status].color} as CSSProperties} onPointerDown={event=>{event.preventDefault();dragging.current=e.id;setSelectedId(e.id);event.currentTarget.setPointerCapture(event.pointerId);}} onPointerMove={moveMarker} onPointerUp={()=>{dragging.current=null;}} onClick={()=>setSelectedId(e.id)} title={`${e.name} · ${STATUS_META[e.status].label}`}><span>{initials(e.name)}</span><small>{STATUS_META[e.status].label}</small></button>)}
             {visible.length===0&&<div className="empty-map">No employees match this filter.</div>}
-            <div className="map-legend"><span><i className="legend-install"/>Install</span><span><i className="legend-repair"/>Repair</span><span><i className="legend-upgrade"/>Upgrade</span><span><i className="legend-call-support"/>Call support</span><span><i className="legend-free"/>Free</span></div><div className="map-scale"><i/>20 m</div>
+            <div className="map-legend"><span><i className="legend-install"/>Install</span><span><i className="legend-repair"/>Repair</span><span><i className="legend-upgrade"/>Upgrade</span><span><i className="legend-remote"/>Remote</span><span><i className="legend-free"/>Free</span></div><div className="map-scale"><i/>20 m</div>
           </div>
           <aside className="map-side-panel">
             <div className="panel-header"><div><h3>Team on site</h3><p>{visible.length} employees shown</p></div><b>{visible.length}</b></div>
