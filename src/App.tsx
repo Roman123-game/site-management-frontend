@@ -34,6 +34,11 @@ function loadToolTasks(): Record<string, string> {
   }
 }
 const initials = (name: string) => name.trim().split(/\s+/).slice(0,2).map(p => p[0]?.toUpperCase() ?? "").join("");
+function SchematicDoor({className,label}:{className:string;label:string}) {
+  return <svg className={`schematic-door ${className}`} viewBox="0 0 30 30" role="img" aria-label={label}>
+    <path d="M4 27V4"/>
+  </svg>;
+}
 
 export default function App() {
   const [employees,setEmployees] = useState<Employee[]>(loadEmployees);
@@ -131,13 +136,13 @@ export default function App() {
         <div className="map-layout">
           <div className="site-map" ref={mapRef} onPointerUp={()=>{dragging.current=null;}} onPointerLeave={()=>{dragging.current=null;}}>
             <div className="map-grid"/>
-            <div className="map-room room-one"><span>ROOM 1</span></div>
+            <div className="map-room room-one"><span>ROOM 1</span><SchematicDoor className="door-one" label="Door for Room 1"/></div>
            
-            <div className="map-room room-three"><span>ROOM 3</span></div>
-            <div className="map-room room-four"><span>GOWNING ROOM</span></div>
+            <div className="map-room room-three"><span>ROOM 3</span><SchematicDoor className="door-three" label="Door for Room 3"/></div>
+            <div className="map-room room-four"><span>GOWNING ROOM</span><SchematicDoor className="door-four" label="Door for Gowning Room"/></div>
             <div className="map-label map-label-north">N <b>↑</b></div>
             <div className="map-road road-horizontal"><span></span></div><div className="map-road road-horizontal road-horizontal-upper"/><div className="map-road road-horizontal road-horizontal-top"><span></span></div><div className="map-road road-vertical"/>
-            <div className="map-room room-two"><span>ROOM 2</span></div>
+            <div className="map-room room-two"><span>ROOM 2</span><SchematicDoor className="door-two" label="Door for Room 2"/></div>
             {TOOL_GROUPS.map(group=><div key={group.className} className={group.className}>{group.tools.map(tool=><button type="button" key={tool.id} className="building building-one" onClick={()=>openTool(tool,group.location)} aria-label={`Edit ${tool.name} task in ${group.location}`} title={`${tool.name}: ${toolTasks[tool.id]}`}><b>{tool.name}</b><div className="building-windows"><i/><i/><i/></div></button>)}</div>)}
             {visible.map(e=><button key={e.id} className={`employee-marker ${selectedId===e.id?"selected":""}`} style={{left:`${e.x}%`,top:`${e.y}%`,"--marker-color":STATUS_META[e.status].color} as CSSProperties} onPointerDown={event=>{event.preventDefault();dragging.current=e.id;setSelectedId(e.id);event.currentTarget.setPointerCapture(event.pointerId);}} onPointerMove={moveMarker} onPointerUp={()=>{dragging.current=null;}} onClick={()=>setSelectedId(e.id)} title={`${e.name} · ${STATUS_META[e.status].label}`}><span>{initials(e.name)}</span><small>{STATUS_META[e.status].label}</small></button>)}
             {visible.length===0&&<div className="empty-map">No employees match this filter.</div>}
