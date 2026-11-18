@@ -129,6 +129,7 @@ export default function App() {
             <div className="map-room room-one"><span>ROOM 1</span></div>
            
             <div className="map-room room-three"><span>ROOM 3</span></div>
+            <div className="map-room room-four"><span>GOWNING ROOM</span></div>
             <div className="map-label map-label-north">N <b>↑</b></div>
             <div className="map-road road-horizontal"><span></span></div><div className="map-road road-horizontal road-horizontal-upper"/><div className="map-road road-horizontal road-horizontal-top"><span></span></div><div className="map-road road-vertical"/>
             <div className="map-room room-two"><span>ROOM 2</span></div>
