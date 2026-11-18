@@ -87,8 +87,8 @@ button{cursor:pointer}
     .tool-buildings-storage .building-one{width:calc(33.333333% - 5.333333px);height:80%;flex:0 0 80%;align-self:flex-end}
         .map-room{position:absolute;z-index:3;padding:0;pointer-events:none}
         .map-room span{position:absolute;top:8px;left:8px;white-space:nowrap;font-size:9px;letter-spacing:1px;font-weight:700;color:#81927f}
-        .room-one{left:1%;top:33%;width:40%;height:29%}
-        .room-two{left:52%;top:33%;width:40%;height:29%}
+        .room-one{left:1%;top:23%;width:40%;height:29%}
+        .room-two{left:52%;top:23%;width:40%;height:29%}
         .room-three{left:52%;top:calc(58.8% - 16px);width:40%;height:calc(39.2% + 16px)}
         .tool-buildings .building{border-radius:8px}
 .tool-buildings .building:focus-visible{outline:2px solid #2866dc;outline-offset:2px}
