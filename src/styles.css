@@ -76,10 +76,10 @@ button{cursor:pointer}
     .tool-buildings-right
     {left:57%}
     .tool-buildings-room-two
-    {top:38%;gap:5px}
+    {top:26%;gap:5px}
     .tool-buildings-room-two-bottom
     {left:calc(62.833333% + 1.333px);
-    top:26%;width:calc(23.333333% - 2.667px);
+    top:38%;width:calc(23.333333% - 2.667px);
     height:18%;display:flex;gap:5px;z-index:2}
     .tool-buildings-storage{left:auto;right:13%;top:calc(64.8% - 16px);bottom:auto;flex-direction:column}
         .tool-buildings 
