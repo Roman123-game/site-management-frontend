@@ -95,7 +95,7 @@ button{cursor:pointer}
         .schematic-door path:first-child{stroke:#526452;stroke-width:1.8}
         .door-one{right:14%;bottom:-8px;transform:rotate(270deg)}
         .door-two{left:16%;bottom:-8px;transform:rotate(270deg)}
-        .door-three{right:14%;top:-4px;transform:rotate(90deg)}
+        .door-three{left:calc(5px - 7.5%);bottom:8%;transform:rotate(180deg)}
         .door-four{left:16%;top:-4px;transform:rotate(90deg)}
         .tool-buildings .building{border-radius:8px}
 .tool-buildings .building:focus-visible{outline:2px solid #2866dc;outline-offset:2px}
