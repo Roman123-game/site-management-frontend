@@ -71,7 +71,6 @@ export default function App() {
   const [selectedTool,setSelectedTool] = useState<(SiteTool & {location:string})|null>(null);
   const [toolTaskDraft,setToolTaskDraft] = useState("");
   const [editingToolTask,setEditingToolTask] = useState(false);
-  const [pendingToolTask,setPendingToolTask] = useState<{toolId:string;task:string}|null>(null);
   const [showAdd,setShowAdd] = useState(false);
   const [showGuide,setShowGuide] = useState(false);
   const [name,setName] = useState("");
@@ -220,10 +219,9 @@ export default function App() {
       <div className="modal-heading"><div><label className="modal-kicker">SITE TOOL · {selectedTool.location.toUpperCase()}</label><h2>{selectedTool.name} tasks</h2><p>Mark tasks complete as work is finished.</p></div><button type="button" className="icon-button" aria-label="Close task list" onClick={()=>setSelectedTool(null)}><X size={19}/></button></div>
       <div className="tool-modal-status"><span>Status</span><span className="tool-status-badge tool-status-badge-modal" style={{"--tool-status-color":TOOL_STATUS_META[toolStatuses[selectedTool.id] ?? selectedTool.status].color} as CSSProperties}>{TOOL_STATUS_META[toolStatuses[selectedTool.id] ?? selectedTool.status].label}</span></div>
       <label htmlFor="tool-status">Tool status<select id="tool-status" value={toolStatuses[selectedTool.id] ?? selectedTool.status} onChange={e=>updateToolStatus(selectedTool.id,e.target.value as ToolStatus)}>{TOOL_STATUSES.map(status=><option key={status} value={status}>{TOOL_STATUS_META[status].label}</option>)}</select></label>
-      <div className="tool-task-list" role="group" aria-label="Available tasks">{Array.from(new Set([...TASK_OPTIONS, toolTasks[selectedTool.id]].filter((task): task is string => Boolean(task)))).map(task=><label key={task} className={`tool-task-option${toolTasks[selectedTool.id]===task?" current-tool-task":""}`} aria-current={toolTasks[selectedTool.id]===task?"true":undefined}>
-        <input type="radio" name={`tool-task-${selectedTool.id}`} aria-label={`Set ${task} as current task`} checked={toolTasks[selectedTool.id]===task} onChange={()=>setPendingToolTask({toolId:selectedTool.id,task})}/>
+      <div className="tool-task-list" role="group" aria-label="Available tasks">{Array.from(new Set([...TASK_OPTIONS, toolTasks[selectedTool.id]].filter((task): task is string => Boolean(task)))).map(task=><label key={task} className="tool-task-option">
+        <input type="radio" name={`tool-task-${selectedTool.id}`} aria-label={`Set ${task} as current task`} checked={toolTasks[selectedTool.id]===task} onChange={()=>selectToolTask(selectedTool.id,task)}/>
         <span>{task}</span>
-        {toolTasks[selectedTool.id]===task&&<span className="current-task-label">CURRENT</span>}
       </label>)}</div>
       <div className="modal-actions"><button type="button" className="secondary-button" onClick={()=>{setToolTaskDraft(toolTasks[selectedTool.id] ?? "");setEditingToolTask(true);}}>Edit current task</button></div>
     </div></div>}
@@ -234,12 +232,6 @@ export default function App() {
       <label htmlFor="tool-task">To-do task<textarea id="tool-task" autoFocus rows={4} value={toolTaskDraft} onChange={e=>setToolTaskDraft(e.target.value)} placeholder="Enter a task for this tool..."/></label>
       <div className="modal-actions"><button type="button" className="remove-task-button" onClick={removeToolTask}>Remove task</button><button type="button" className="secondary-button" onClick={()=>setEditingToolTask(false)}>Back to tasks</button><button type="submit" className="primary-button">Save task</button></div>
     </form></div>}
-
-    {pendingToolTask&&<div className="modal-backdrop task-confirm-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)setPendingToolTask(null);}}><div className="modal task-confirm-modal" role="dialog" aria-modal="true" aria-labelledby="task-confirm-title">
-      <div className="modal-heading"><div><label className="modal-kicker">CURRENT TASK</label><h2 id="task-confirm-title">Confirm task</h2><p>Set this task as current?</p></div></div>
-      <strong className="task-confirm-name">{pendingToolTask.task}</strong>
-      <div className="modal-actions"><button type="button" className="secondary-button" onClick={()=>setPendingToolTask(null)}>Cancel</button><button type="button" className="primary-button" onClick={()=>{selectToolTask(pendingToolTask.toolId,pendingToolTask.task);setPendingToolTask(null);}}>Done</button></div>
-    </div></div>}
 
     {showGuide&&<div className="modal-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)setShowGuide(false);}}><div className="modal help-modal">
       <div className="modal-heading"><div><label className="modal-kicker">QUICK GUIDE</label><h2>Using the site map</h2><p>Manage your workforce from one visual workspace.</p></div><button className="icon-button" onClick={()=>setShowGuide(false)}><X size={19}/></button></div>
