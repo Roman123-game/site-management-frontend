@@ -11,6 +11,15 @@ const TOOL_STATUSES_KEY = "fieldboard-tool-statuses-v1";
 const TOOL_DIRECTORY_TASKS_KEY = "fieldboard-tool-directory-tasks-v1";
 const STATUSES: EmployeeStatus[] = ["install", "repair", "upgrade", "remote", "free"];
 const TOOL_DIRECTORIES = ["Logistics Integrity", "Shipment Brackets", "Mechanical", "PC & Electronics", "Leveling Aligment", "Hookups & Facilites"];
+const LOGISTICS_INTEGRITY_TASKS = [
+  "Tilt & G-hock sensors: inspect indicators, record values and take verification images",
+  "Granite Base Assembly: release and position stage supporting legs (x4)"
+];
+const SHIPMENT_BRACKETS_TASKS = [
+  "Stage XY Mechanism: remove brackets from main XY stage",
+  "East Axis (XYZ): remove travel brackets from east axis",
+  "West Axis (XYZ): remove travel brackets from west axis"
+];
 type ToolStatus = "in-shipment" | "under-warranty" | "out-of-service";
 const TOOL_STATUSES: ToolStatus[] = ["in-shipment", "under-warranty", "out-of-service"];
 const TOOL_STATUS_META: Record<ToolStatus, {label:string;color:string}> = {
@@ -64,18 +73,24 @@ function loadToolStatuses(): Record<string, ToolStatus> {
 }
 function loadDirectoryTasks(): Record<string, Record<string, string[]>> {
   const defaults: Record<string, Record<string, string[]>> = {};
-  let savedTasks: Record<string, string> = {};
-  try {
-    const rawTasks = localStorage.getItem(TOOL_TASKS_KEY);
-    if (rawTasks) savedTasks = JSON.parse(rawTasks) as Record<string, string>;
-  } catch {}
   for (const tool of TOOL_GROUPS.flatMap(group => group.tools)) {
-    const task = savedTasks[tool.id];
-    defaults[tool.id] = Object.fromEntries(TOOL_DIRECTORIES.map(directory => [directory, directory===TOOL_DIRECTORIES[0]&&task?[task]:[]]));
+    defaults[tool.id] = Object.fromEntries(TOOL_DIRECTORIES.map(directory => [
+      directory,
+      directory==="Logistics Integrity"?LOGISTICS_INTEGRITY_TASKS:
+      directory==="Shipment Brackets"?SHIPMENT_BRACKETS_TASKS:[]
+    ]));
   }
   try {
     const raw = localStorage.getItem(TOOL_DIRECTORY_TASKS_KEY);
-    return raw ? { ...defaults, ...JSON.parse(raw) as Record<string, Record<string, string[]>> } : defaults;
+    if (!raw) return defaults;
+    const saved = JSON.parse(raw) as Record<string, Record<string, string[]>>;
+    return Object.fromEntries(Object.entries(defaults).map(([toolId,directories])=>{
+      const savedDirectories=saved[toolId] ?? {};
+      const logistics=[...new Set([...(savedDirectories["Logistics Integrity"]??[]),...LOGISTICS_INTEGRITY_TASKS])]
+        .filter(task=>task!== "Install door");
+      const shipment=[...new Set([...(savedDirectories["Shipment Brackets"]??[]),...SHIPMENT_BRACKETS_TASKS])];
+      return [toolId,{...directories,...savedDirectories,"Logistics Integrity":logistics,"Shipment Brackets":shipment}];
+    }));
   } catch {
     return defaults;
   }
