@@ -107,7 +107,8 @@ button{cursor:pointer}
 .tool-task-option.current-tool-task{position:relative;border-color:#2866dc;background:#edf4ff;color:#2459ac;box-shadow:0 0 0 2px #2866dc12}
 .tool-task-option.current-tool-task::before{content:"";position:absolute;left:-2px;top:-1px;bottom:-1px;width:5px;border-radius:7px 0 0 7px;background:#2866dc}
 .tool-task-option input[type="radio"]{appearance:none;width:17px;height:17px;margin:0;padding:0;border:1.5px solid #aeb8c6;border-radius:50%;background:#fff;box-shadow:none;flex-shrink:0;display:grid;place-content:center}
-.tool-task-option input[type="radio"]:checked{border:5px solid #2866dc;background:#fff}
+.tool-task-option input[type="radio"]:checked{border-color:#10a779;background:#10a779;box-shadow:none}
+.tool-task-option input[type="radio"]:checked::after{content:"";width:4px;height:7px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg);margin-top:-1px}
 .tool-task-option input[type="checkbox"]:checked{border-color:#10a779;background:#10a779}
 .tool-task-option input[type="checkbox"]:checked::after{content:"";width:4px;height:7px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg);margin-top:-1px}
 .tool-task-option input[type="checkbox"]:focus-visible{outline:2px solid #2866dc;outline-offset:2px}
@@ -126,6 +127,9 @@ button{cursor:pointer}
 .tool-modal-status{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .tool-modal-status>span:first-child{font-size:12px;font-weight:700;color:#667386}
 .tool-status-badge-modal{min-width:145px;padding:9px 12px;border-radius:7px;font-size:12px;text-align:center}
+.task-confirm-backdrop{z-index:30}
+.task-confirm-modal{width:min(100%,380px)}
+.task-confirm-name{padding:12px 13px;border:1px solid #dfe6f2;border-radius:7px;background:#f6f9ff;color:#344054;font-size:13px}
 
 @media(max-width:850px){.details-status-actions{flex:1 1 30%}}
 @media(max-width:560px){.details-status-actions{width:100%;flex-basis:100%}}
