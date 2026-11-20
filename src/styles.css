@@ -106,7 +106,7 @@ button{cursor:pointer}
 .tool-task-option:hover{border-color:#9dbcf4;background:#f8faff}
 .tool-task-option.current-tool-task{position:relative;border-color:#2866dc;background:#edf4ff;color:#2459ac;box-shadow:0 0 0 2px #2866dc12}
 .tool-task-option.current-tool-task::before{content:"";position:absolute;left:-2px;top:-1px;bottom:-1px;width:5px;border-radius:7px 0 0 7px;background:#2866dc}
-.tool-task-option input[type="radio"],.tool-task-option input[type="checkbox"]{appearance:none;width:17px;height:17px;margin:0;padding:0;border:1.5px solid #aeb8c6;border-radius:50%;background:#fff;box-shadow:none;flex-shrink:0;display:grid;place-content:center}
+.tool-task-option input[type="radio"]{appearance:none;width:17px;height:17px;margin:0;padding:0;border:1.5px solid #aeb8c6;border-radius:50%;background:#fff;box-shadow:none;flex-shrink:0;display:grid;place-content:center}
 .tool-task-option input[type="radio"]:checked{border:5px solid #2866dc;background:#fff}
 .tool-task-option input[type="checkbox"]:checked{border-color:#10a779;background:#10a779}
 .tool-task-option input[type="checkbox"]:checked::after{content:"";width:4px;height:7px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg);margin-top:-1px}

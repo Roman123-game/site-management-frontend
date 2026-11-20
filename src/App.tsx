@@ -221,7 +221,6 @@ export default function App() {
       <label htmlFor="tool-status">Tool status<select id="tool-status" value={toolStatuses[selectedTool.id] ?? selectedTool.status} onChange={e=>updateToolStatus(selectedTool.id,e.target.value as ToolStatus)}>{TOOL_STATUSES.map(status=><option key={status} value={status}>{TOOL_STATUS_META[status].label}</option>)}</select></label>
       <div className="tool-task-list" role="group" aria-label="Available tasks">{Array.from(new Set([...TASK_OPTIONS, toolTasks[selectedTool.id]].filter((task): task is string => Boolean(task)))).map(task=><label key={task} className={`tool-task-option${toolTasks[selectedTool.id]===task?" current-tool-task":""}`} aria-current={toolTasks[selectedTool.id]===task?"true":undefined}>
         <input type="radio" name={`tool-task-${selectedTool.id}`} aria-label={`Set ${task} as current task`} checked={toolTasks[selectedTool.id]===task} onChange={()=>selectToolTask(selectedTool.id,task)} onClick={()=>selectToolTask(selectedTool.id,task)}/>
-        <input type="checkbox" aria-label={`Mark ${task} complete`} checked={completedToolTasks[selectedTool.id]?.includes(task) ?? false} onChange={event=>toggleToolTaskCompletion(selectedTool.id,task,event.target.checked)}/>
         <span>{task}</span>
         {toolTasks[selectedTool.id]===task&&<span className="current-task-label">CURRENT</span>}
       </label>)}</div>
