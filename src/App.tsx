@@ -111,6 +111,9 @@ export default function App() {
   function updateToolStatus(toolId:string,status:ToolStatus) {
     setToolStatuses(old=>({...old,[toolId]:status}));
   }
+  function selectToolTask(toolId:string,task:string) {
+    setToolTasks(old=>({...old,[toolId]:task}));
+  }
   function saveToolTask(event:FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if(!selectedTool)return;
@@ -216,7 +219,8 @@ export default function App() {
       <div className="modal-heading"><div><label className="modal-kicker">SITE TOOL · {selectedTool.location.toUpperCase()}</label><h2>{selectedTool.name} tasks</h2><p>Mark tasks complete as work is finished.</p></div><button type="button" className="icon-button" aria-label="Close task list" onClick={()=>setSelectedTool(null)}><X size={19}/></button></div>
       <div className="tool-modal-status"><span>Status</span><span className="tool-status-badge tool-status-badge-modal" style={{"--tool-status-color":TOOL_STATUS_META[toolStatuses[selectedTool.id] ?? selectedTool.status].color} as CSSProperties}>{TOOL_STATUS_META[toolStatuses[selectedTool.id] ?? selectedTool.status].label}</span></div>
       <label htmlFor="tool-status">Tool status<select id="tool-status" value={toolStatuses[selectedTool.id] ?? selectedTool.status} onChange={e=>updateToolStatus(selectedTool.id,e.target.value as ToolStatus)}>{TOOL_STATUSES.map(status=><option key={status} value={status}>{TOOL_STATUS_META[status].label}</option>)}</select></label>
-      <div className="tool-task-list" role="group" aria-label="Available tasks">{Array.from(new Set([...TASK_OPTIONS, toolTasks[selectedTool.id]].filter((task): task is string => Boolean(task)))).map(task=><label key={task} className={`tool-task-option${toolTasks[selectedTool.id]===task?" current-tool-task":""}`}>
+      <div className="tool-task-list" role="group" aria-label="Available tasks">{Array.from(new Set([...TASK_OPTIONS, toolTasks[selectedTool.id]].filter((task): task is string => Boolean(task)))).map(task=><label key={task} className={`tool-task-option${toolTasks[selectedTool.id]===task?" current-tool-task":""}`} aria-current={toolTasks[selectedTool.id]===task?"true":undefined}>
+        <input type="radio" name={`tool-task-${selectedTool.id}`} aria-label={`Set ${task} as current task`} checked={toolTasks[selectedTool.id]===task} onChange={()=>selectToolTask(selectedTool.id,task)} onClick={()=>selectToolTask(selectedTool.id,task)}/>
         <input type="checkbox" aria-label={`Mark ${task} complete`} checked={completedToolTasks[selectedTool.id]?.includes(task) ?? false} onChange={event=>toggleToolTaskCompletion(selectedTool.id,task,event.target.checked)}/>
         <span>{task}</span>
         {toolTasks[selectedTool.id]===task&&<span className="current-task-label">CURRENT</span>}
