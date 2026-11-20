@@ -124,6 +124,11 @@ button{cursor:pointer}
 
 .details-status-actions{display:flex;align-items:flex-end;gap:8px}
 .details-status-actions .details-status{flex:1;min-width:115px}
+.employee-list{max-height:600px;min-height:0;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#c5cdd8 transparent}
+.employee-list::-webkit-scrollbar{width:1px!important}
+.employee-list::-webkit-scrollbar-track{background:transparent}
+.employee-list::-webkit-scrollbar-thumb{background:#c5cdd8;border-radius:3px}
+.panel-footer{margin-top:auto}
 .tool-status-badge{display:block;max-width:100%;border-radius:4px;padding:3px 5px;background:color-mix(in srgb,var(--tool-status-color) 12%,white);border:1px solid color-mix(in srgb,var(--tool-status-color) 35%,white);color:var(--tool-status-color);font-size:7px;font-weight:700;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tool-modal-status{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .tool-modal-status>span:first-child{font-size:12px;font-weight:700;color:#667386}
