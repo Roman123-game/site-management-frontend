@@ -169,8 +169,10 @@ export default function App() {
       {selected&&<section className="details-card">
         <div className="details-identity"><div className="avatar details-avatar" style={{background:STATUS_META[selected.status].soft,color:STATUS_META[selected.status].color}}>{initials(selected.name)}</div><div><strong>{selected.name}</strong><span>{selected.role}</span></div></div>
         <div className="details-task"><label>CURRENT TASK</label><strong>{selected.task||"No task assigned"}</strong></div><div className="details-task"><label>CONTACT</label><strong>{selected.phone||"Not provided"}</strong></div>
-        <div className="details-status"><label htmlFor="employee-status">STATUS</label><select id="employee-status" value={selected.status} onChange={e=>update(selected.id,{status:e.target.value as EmployeeStatus})}>{STATUSES.map(s=><option key={s} value={s}>{STATUS_META[s].label}</option>)}</select></div>
-        <button className="delete-button" title="Remove employee" onClick={()=>removeEmployee(selected.id)}><Trash2 size={17}/></button>
+        <div className="details-status-actions">
+          <div className="details-status"><label htmlFor="employee-status">STATUS</label><select id="employee-status" value={selected.status} onChange={e=>update(selected.id,{status:e.target.value as EmployeeStatus})}>{STATUSES.map(s=><option key={s} value={s}>{STATUS_META[s].label}</option>)}</select></div>
+          <button className="delete-button" title="Remove employee" onClick={()=>removeEmployee(selected.id)}><Trash2 size={17}/></button>
+        </div>
       </section>}
       <footer className="page-footer"><span>FIELDBOARD · SITE OPERATIONS</span><span><Activity size={13}/>Frontend demo · Local browser storage</span></footer>
     </main>
