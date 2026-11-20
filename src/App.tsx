@@ -8,8 +8,9 @@ const KEY = "fieldboard-employees-v1";
 const TOOL_TASKS_KEY = "fieldboard-tool-tasks-v1";
 const COMPLETED_TOOL_TASKS_KEY = "fieldboard-completed-tool-tasks-v1";
 const TOOL_STATUSES_KEY = "fieldboard-tool-statuses-v1";
+const TOOL_DIRECTORY_TASKS_KEY = "fieldboard-tool-directory-tasks-v1";
 const STATUSES: EmployeeStatus[] = ["install", "repair", "upgrade", "remote", "free"];
-const TASK_OPTIONS = ["Logistics Integrity", "Shipment Brackets", "Mechanical", "PC & Electronics", "Hookups & Facilites"];
+const TOOL_DIRECTORIES = ["Logistics Integrity", "Shipment Brackets", "Mechanical", "PC & Electronics", "Leveling Aligment", "Hookups & Facilites"];
 type ToolStatus = "in-shipment" | "under-warranty" | "out-of-service";
 const TOOL_STATUSES: ToolStatus[] = ["in-shipment", "under-warranty", "out-of-service"];
 const TOOL_STATUS_META: Record<ToolStatus, {label:string;color:string}> = {
@@ -37,7 +38,9 @@ function loadToolTasks(): Record<string, string> {
   const defaults = Object.fromEntries(TOOL_GROUPS.flatMap(group => group.tools.map(tool => [tool.id, tool.task])));
   try {
     const raw = localStorage.getItem(TOOL_TASKS_KEY);
-    return raw ? { ...defaults, ...JSON.parse(raw) as Record<string, string> } : defaults;
+    if (!raw) return defaults;
+    const saved = JSON.parse(raw) as Record<string, string>;
+    return Object.fromEntries(Object.entries({...defaults,...saved}).map(([toolId,task])=>[toolId,typeof task==="string"&&task?task:""]));
   } catch {
     return defaults;
   }
@@ -59,17 +62,37 @@ function loadToolStatuses(): Record<string, ToolStatus> {
     return defaults;
   }
 }
+function loadDirectoryTasks(): Record<string, Record<string, string[]>> {
+  const defaults: Record<string, Record<string, string[]>> = {};
+  let savedTasks: Record<string, string> = {};
+  try {
+    const rawTasks = localStorage.getItem(TOOL_TASKS_KEY);
+    if (rawTasks) savedTasks = JSON.parse(rawTasks) as Record<string, string>;
+  } catch {}
+  for (const tool of TOOL_GROUPS.flatMap(group => group.tools)) {
+    const task = savedTasks[tool.id];
+    defaults[tool.id] = Object.fromEntries(TOOL_DIRECTORIES.map(directory => [directory, directory===TOOL_DIRECTORIES[0]&&task?[task]:[]]));
+  }
+  try {
+    const raw = localStorage.getItem(TOOL_DIRECTORY_TASKS_KEY);
+    return raw ? { ...defaults, ...JSON.parse(raw) as Record<string, Record<string, string[]>> } : defaults;
+  } catch {
+    return defaults;
+  }
+}
 const initials = (name: string) => name.trim().split(/\s+/).slice(0,2).map(p => p[0]?.toUpperCase() ?? "").join("");
 export default function App() {
   const [employees,setEmployees] = useState<Employee[]>(loadEmployees);
   const [toolTasks,setToolTasks] = useState<Record<string,string>>(loadToolTasks);
   const [completedToolTasks,setCompletedToolTasks] = useState<Record<string,string[]>>(loadCompletedToolTasks);
   const [toolStatuses,setToolStatuses] = useState<Record<string,ToolStatus>>(loadToolStatuses);
+  const [directoryTasks,setDirectoryTasks] = useState<Record<string,Record<string,string[]>>>(loadDirectoryTasks);
   const [filter,setFilter] = useState<"all"|EmployeeStatus>("all");
   const [search,setSearch] = useState("");
   const [selectedId,setSelectedId] = useState<string|null>("e-1");
   const [selectedTool,setSelectedTool] = useState<(SiteTool & {location:string})|null>(null);
   const [toolTaskDraft,setToolTaskDraft] = useState("");
+  const [toolDirectoryDraft,setToolDirectoryDraft] = useState(TOOL_DIRECTORIES[0]);
   const [editingToolTask,setEditingToolTask] = useState(false);
   const [showAdd,setShowAdd] = useState(false);
   const [showGuide,setShowGuide] = useState(false);
@@ -85,6 +108,7 @@ export default function App() {
   useEffect(() => { localStorage.setItem(TOOL_TASKS_KEY,JSON.stringify(toolTasks)); },[toolTasks]);
   useEffect(() => { localStorage.setItem(COMPLETED_TOOL_TASKS_KEY,JSON.stringify(completedToolTasks)); },[completedToolTasks]);
   useEffect(() => { localStorage.setItem(TOOL_STATUSES_KEY,JSON.stringify(toolStatuses)); },[toolStatuses]);
+  useEffect(() => { localStorage.setItem(TOOL_DIRECTORY_TASKS_KEY,JSON.stringify(directoryTasks)); },[directoryTasks]);
   const selected = employees.find(e=>e.id===selectedId) ?? null;
   const counts = useMemo(() => ({
     all:employees.length,
@@ -100,6 +124,7 @@ export default function App() {
   function openTool(tool:SiteTool,location:string) {
     setSelectedTool({...tool,location});
     setEditingToolTask(false);
+    setToolDirectoryDraft(TOOL_DIRECTORIES[0]);
   }
   function toggleToolTaskCompletion(toolId:string,task:string,completed:boolean) {
     setCompletedToolTasks(old=>{
@@ -114,13 +139,27 @@ export default function App() {
   function saveToolTask(event:FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if(!selectedTool)return;
-    setToolTasks(old=>({...old,[selectedTool.id]:toolTaskDraft.trim()}));
+    const task=toolTaskDraft.trim();
+    if(!task)return;
+    setToolTasks(old=>({...old,[selectedTool.id]:task}));
+    setDirectoryTasks(old=>{
+      const directories=Object.fromEntries(TOOL_DIRECTORIES.map(directory=>[directory,[...(old[selectedTool.id]?.[directory]??[]).filter(item=>item!==task)]]));
+      directories[toolDirectoryDraft]=[...new Set([...(directories[toolDirectoryDraft]??[]),task])];
+      return {...old,[selectedTool.id]:directories};
+    });
     setSelectedTool(null);
     setEditingToolTask(false);
   }
   function removeToolTask() {
     if(!selectedTool)return;
     setToolTasks(old=>({...old,[selectedTool.id]:""}));
+    setDirectoryTasks(old=>({
+      ...old,
+      [selectedTool.id]:Object.fromEntries(TOOL_DIRECTORIES.map(directory=>[
+        directory,
+        (old[selectedTool.id]?.[directory]??[]).filter(task=>task!==toolTasks[selectedTool.id])
+      ]))
+    }));
     setSelectedTool(null);
     setEditingToolTask(false);
   }
@@ -216,16 +255,20 @@ export default function App() {
       <div className="modal-heading"><div><label className="modal-kicker">SITE TOOL · {selectedTool.location.toUpperCase()}</label><h2>{selectedTool.name} tasks</h2><p>Mark tasks complete as work is finished.</p></div><button type="button" className="icon-button" aria-label="Close task list" onClick={()=>setSelectedTool(null)}><X size={19}/></button></div>
       <div className="tool-modal-status"><span>Status</span><span className="tool-status-badge tool-status-badge-modal" style={{"--tool-status-color":TOOL_STATUS_META[toolStatuses[selectedTool.id] ?? selectedTool.status].color} as CSSProperties}>{TOOL_STATUS_META[toolStatuses[selectedTool.id] ?? selectedTool.status].label}</span></div>
       <label htmlFor="tool-status">Tool status<select id="tool-status" value={toolStatuses[selectedTool.id] ?? selectedTool.status} onChange={e=>updateToolStatus(selectedTool.id,e.target.value as ToolStatus)}>{TOOL_STATUSES.map(status=><option key={status} value={status}>{TOOL_STATUS_META[status].label}</option>)}</select></label>
-      <div className="tool-task-list" role="group" aria-label="Tool directories">{TASK_OPTIONS.map(task=><label key={task} className="tool-task-option">
-        <span>{task}</span>
-        <input type="checkbox" aria-label={`Mark ${task} complete`} checked={completedToolTasks[selectedTool.id]?.includes(task) ?? false} onChange={event=>toggleToolTaskCompletion(selectedTool.id,task,event.target.checked)} onClick={event=>event.stopPropagation()}/>
-      </label>)}</div>
-      <div className="modal-actions"><button type="button" className="secondary-button" onClick={()=>{setToolTaskDraft(toolTasks[selectedTool.id] ?? "");setEditingToolTask(true);}}>Edit current task</button></div>
+      <div className="tool-directory-list" role="group" aria-label="Tool directories">{TOOL_DIRECTORIES.map(directory=>{
+        const tasks=directoryTasks[selectedTool.id]?.[directory]??[];
+        return <section key={directory} className="tool-directory"><h3>{directory}</h3>{tasks.length===0?<p className="tool-directory-empty">No tasks</p>:tasks.map(task=><label key={task} className="tool-task-option">
+          <span>{task}</span>
+          <input type="checkbox" aria-label={`Mark ${task} complete`} checked={completedToolTasks[selectedTool.id]?.includes(`${directory}::${task}`) ?? false} onChange={event=>toggleToolTaskCompletion(selectedTool.id,`${directory}::${task}`,event.target.checked)} onClick={event=>event.stopPropagation()}/>
+        </label>)}</section>;
+      })}</div>
+      <div className="modal-actions"><button type="button" className="secondary-button" onClick={()=>{setToolTaskDraft(toolTasks[selectedTool.id] ?? "");setToolDirectoryDraft(TOOL_DIRECTORIES.find(directory=>(directoryTasks[selectedTool.id]?.[directory]??[]).includes(toolTasks[selectedTool.id]))??TOOL_DIRECTORIES[0]);setEditingToolTask(true);}}>Edit current task</button></div>
     </div></div>}
 
     {selectedTool&&editingToolTask&&<div className="modal-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)setSelectedTool(null);}}><form className="modal" onSubmit={saveToolTask}>
       <div className="modal-heading"><div><label className="modal-kicker">SITE TOOL · {selectedTool.location.toUpperCase()}</label><h2>Edit task</h2><p>Update the to-do task for {selectedTool.name}.</p></div><button type="button" className="icon-button" aria-label="Close tool task editor" onClick={()=>setSelectedTool(null)}><X size={19}/></button></div>
       <div className="tool-modal-status"><span>Status</span><span className="tool-status-badge tool-status-badge-modal" style={{"--tool-status-color":TOOL_STATUS_META[toolStatuses[selectedTool.id] ?? selectedTool.status].color} as CSSProperties}>{TOOL_STATUS_META[toolStatuses[selectedTool.id] ?? selectedTool.status].label}</span></div>
+      <label htmlFor="tool-directory">Directory<select id="tool-directory" value={toolDirectoryDraft} onChange={e=>setToolDirectoryDraft(e.target.value)}>{TOOL_DIRECTORIES.map(directory=><option key={directory} value={directory}>{directory}</option>)}</select></label>
       <label htmlFor="tool-task">To-do task<textarea id="tool-task" autoFocus rows={4} value={toolTaskDraft} onChange={e=>setToolTaskDraft(e.target.value)} placeholder="Enter a task for this tool..."/></label>
       <div className="modal-actions"><button type="button" className="remove-task-button" onClick={removeToolTask}>Remove task</button><button type="button" className="secondary-button" onClick={()=>setEditingToolTask(false)}>Back to tasks</button><button type="submit" className="primary-button">Save task</button></div>
     </form></div>}
