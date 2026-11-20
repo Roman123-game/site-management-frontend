@@ -220,8 +220,8 @@ export default function App() {
       <div className="tool-modal-status"><span>Status</span><span className="tool-status-badge tool-status-badge-modal" style={{"--tool-status-color":TOOL_STATUS_META[toolStatuses[selectedTool.id] ?? selectedTool.status].color} as CSSProperties}>{TOOL_STATUS_META[toolStatuses[selectedTool.id] ?? selectedTool.status].label}</span></div>
       <label htmlFor="tool-status">Tool status<select id="tool-status" value={toolStatuses[selectedTool.id] ?? selectedTool.status} onChange={e=>updateToolStatus(selectedTool.id,e.target.value as ToolStatus)}>{TOOL_STATUSES.map(status=><option key={status} value={status}>{TOOL_STATUS_META[status].label}</option>)}</select></label>
       <div className="tool-task-list" role="group" aria-label="Available tasks">{Array.from(new Set([...TASK_OPTIONS, toolTasks[selectedTool.id]].filter((task): task is string => Boolean(task)))).map(task=><label key={task} className="tool-task-option">
-        <input type="radio" name={`tool-task-${selectedTool.id}`} aria-label={`Set ${task} as current task`} checked={toolTasks[selectedTool.id]===task} onChange={()=>selectToolTask(selectedTool.id,task)}/>
         <span>{task}</span>
+        <input type="checkbox" aria-label={`Mark ${task} complete`} checked={completedToolTasks[selectedTool.id]?.includes(task) ?? false} onChange={event=>toggleToolTaskCompletion(selectedTool.id,task,event.target.checked)} onClick={event=>event.stopPropagation()}/>
       </label>)}</div>
       <div className="modal-actions"><button type="button" className="secondary-button" onClick={()=>{setToolTaskDraft(toolTasks[selectedTool.id] ?? "");setEditingToolTask(true);}}>Edit current task</button></div>
     </div></div>}
