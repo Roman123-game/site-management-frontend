@@ -9,7 +9,7 @@ const TOOL_TASKS_KEY = "fieldboard-tool-tasks-v1";
 const COMPLETED_TOOL_TASKS_KEY = "fieldboard-completed-tool-tasks-v1";
 const TOOL_STATUSES_KEY = "fieldboard-tool-statuses-v1";
 const STATUSES: EmployeeStatus[] = ["install", "repair", "upgrade", "remote", "free"];
-const TASK_OPTIONS = ["Install door", "Upgrade controller", "Inspect wiring", "Replace lighting", "Test access panel", "Check emergency exit", "Install safety signage", "Inspect network cabinet", "Inventory spare parts", "Service power tools", "Check controller stock"];
+const TASK_OPTIONS = ["Logistics Integrity", "Shipment Brackets", "Mechanical", "PC & Electronics", "Hookups & Facilites"];
 type ToolStatus = "in-shipment" | "under-warranty" | "out-of-service";
 const TOOL_STATUSES: ToolStatus[] = ["in-shipment", "under-warranty", "out-of-service"];
 const TOOL_STATUS_META: Record<ToolStatus, {label:string;color:string}> = {
@@ -20,10 +20,10 @@ const TOOL_STATUS_META: Record<ToolStatus, {label:string;color:string}> = {
 type SiteTool = { id: string; name: string; task: string; status: ToolStatus };
 type StoredEmployee = Omit<Employee, "status"> & { status: EmployeeStatus | "call-support" };
 const TOOL_GROUPS: { className: string; location: string; tools: SiteTool[] }[] = [
-  { className: "tool-buildings", location: "west area", tools: [{ id: "site-a-01", name: "Tool 01", task: "Install door", status: "under-warranty" }, { id: "site-a-02", name: "Tool 02", task: "Upgrade controller", status: "in-shipment" }, { id: "site-a-03", name: "Tool 03", task: "Inspect wiring", status: "under-warranty" }] },
-  { className: "tool-buildings tool-buildings-right tool-buildings-room-two", location: "east area", tools: [{ id: "site-b-01", name: "Tool 01", task: "Replace lighting", status: "under-warranty" }, { id: "site-b-02", name: "Tool 02", task: "Test access panel", status: "out-of-service" }, { id: "site-b-03", name: "Tool 03", task: "Check emergency exit", status: "under-warranty" }] },
-  { className: "tool-buildings tool-buildings-room-two-bottom", location: "south area", tools: [{ id: "site-c-04", name: "Tool 04", task: "Install safety signage", status: "in-shipment" }, { id: "site-c-05", name: "Tool 05", task: "Inspect network cabinet", status: "under-warranty" }] },
-  { className: "tool-buildings tool-buildings-storage", location: "storage area", tools: [{ id: "storage-01", name: "Tool 01", task: "Inventory spare parts", status: "under-warranty" }, { id: "storage-02", name: "Tool 02", task: "Service power tools", status: "out-of-service" }, { id: "storage-03", name: "Tool 03", task: "Check controller stock", status: "under-warranty" }] }
+  { className: "tool-buildings", location: "west area", tools: [{ id: "site-a-01", name: "Tool 01", task: "Logistics Integrity", status: "under-warranty" }, { id: "site-a-02", name: "Tool 02", task: "Shipment Brackets", status: "in-shipment" }, { id: "site-a-03", name: "Tool 03", task: "Mechanical", status: "under-warranty" }] },
+  { className: "tool-buildings tool-buildings-right tool-buildings-room-two", location: "east area", tools: [{ id: "site-b-01", name: "Tool 01", task: "PC & Electronics", status: "under-warranty" }, { id: "site-b-02", name: "Tool 02", task: "Hookups & Facilites", status: "out-of-service" }, { id: "site-b-03", name: "Tool 03", task: "Logistics Integrity", status: "under-warranty" }] },
+  { className: "tool-buildings tool-buildings-room-two-bottom", location: "south area", tools: [{ id: "site-c-04", name: "Tool 04", task: "Shipment Brackets", status: "in-shipment" }, { id: "site-c-05", name: "Tool 05", task: "Mechanical", status: "under-warranty" }] },
+  { className: "tool-buildings tool-buildings-storage", location: "storage area", tools: [{ id: "storage-01", name: "Tool 01", task: "PC & Electronics", status: "under-warranty" }, { id: "storage-02", name: "Tool 02", task: "Hookups & Facilites", status: "out-of-service" }, { id: "storage-03", name: "Tool 03", task: "Logistics Integrity", status: "under-warranty" }] }
 ];
 function loadEmployees(): Employee[] {
   try {
@@ -216,7 +216,7 @@ export default function App() {
       <div className="modal-heading"><div><label className="modal-kicker">SITE TOOL · {selectedTool.location.toUpperCase()}</label><h2>{selectedTool.name} tasks</h2><p>Mark tasks complete as work is finished.</p></div><button type="button" className="icon-button" aria-label="Close task list" onClick={()=>setSelectedTool(null)}><X size={19}/></button></div>
       <div className="tool-modal-status"><span>Status</span><span className="tool-status-badge tool-status-badge-modal" style={{"--tool-status-color":TOOL_STATUS_META[toolStatuses[selectedTool.id] ?? selectedTool.status].color} as CSSProperties}>{TOOL_STATUS_META[toolStatuses[selectedTool.id] ?? selectedTool.status].label}</span></div>
       <label htmlFor="tool-status">Tool status<select id="tool-status" value={toolStatuses[selectedTool.id] ?? selectedTool.status} onChange={e=>updateToolStatus(selectedTool.id,e.target.value as ToolStatus)}>{TOOL_STATUSES.map(status=><option key={status} value={status}>{TOOL_STATUS_META[status].label}</option>)}</select></label>
-      <div className="tool-task-list" role="group" aria-label="Available tasks">{Array.from(new Set([...TASK_OPTIONS, toolTasks[selectedTool.id]].filter((task): task is string => Boolean(task)))).map(task=><label key={task} className="tool-task-option">
+      <div className="tool-task-list" role="group" aria-label="Tool directories">{TASK_OPTIONS.map(task=><label key={task} className="tool-task-option">
         <span>{task}</span>
         <input type="checkbox" aria-label={`Mark ${task} complete`} checked={completedToolTasks[selectedTool.id]?.includes(task) ?? false} onChange={event=>toggleToolTaskCompletion(selectedTool.id,task,event.target.checked)} onClick={event=>event.stopPropagation()}/>
       </label>)}</div>
