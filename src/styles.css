@@ -128,6 +128,7 @@ button{cursor:pointer}
 .tool-modal-status{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .tool-modal-status>span:first-child{font-size:12px;font-weight:700;color:#667386}
 .tool-status-badge-modal{min-width:145px;padding:9px 12px;border-radius:7px;font-size:12px;text-align:center}
+.tool-status-label>span{display:inline-flex;width:max-content;padding:4px 7px;border-radius:5px;background:#eaf2ff;color:#2866dc;font-weight:800}
 .task-confirm-backdrop{z-index:30}
 .task-confirm-modal{width:min(100%,380px)}
 .task-confirm-name{padding:12px 13px;border:1px solid #dfe6f2;border-radius:7px;background:#f6f9ff;color:#344054;font-size:13px}
