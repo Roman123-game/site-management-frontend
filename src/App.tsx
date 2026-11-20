@@ -111,9 +111,6 @@ export default function App() {
   function updateToolStatus(toolId:string,status:ToolStatus) {
     setToolStatuses(old=>({...old,[toolId]:status}));
   }
-  function selectToolTask(toolId:string,task:string) {
-    setToolTasks(old=>({...old,[toolId]:task}));
-  }
   function saveToolTask(event:FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if(!selectedTool)return;
