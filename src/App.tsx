@@ -7,15 +7,23 @@ import type { Employee, EmployeeStatus } from "./types";
 const KEY = "fieldboard-employees-v1";
 const TOOL_TASKS_KEY = "fieldboard-tool-tasks-v1";
 const COMPLETED_TOOL_TASKS_KEY = "fieldboard-completed-tool-tasks-v1";
+const TOOL_STATUSES_KEY = "fieldboard-tool-statuses-v1";
 const STATUSES: EmployeeStatus[] = ["install", "repair", "upgrade", "remote", "free"];
 const TASK_OPTIONS = ["Install door", "Upgrade controller", "Inspect wiring", "Replace lighting", "Test access panel", "Check emergency exit", "Install safety signage", "Inspect network cabinet", "Inventory spare parts", "Service power tools", "Check controller stock"];
-type SiteTool = { id: string; name: string; task: string };
+type ToolStatus = "in-shipment" | "under-warranty" | "out-of-service";
+const TOOL_STATUSES: ToolStatus[] = ["in-shipment", "under-warranty", "out-of-service"];
+const TOOL_STATUS_META: Record<ToolStatus, {label:string;color:string}> = {
+  "in-shipment":{label:"In shipment",color:"#3b82f6"},
+  "under-warranty":{label:"Under warranty",color:"#10a779"},
+  "out-of-service":{label:"Out of service",color:"#ef4444"}
+};
+type SiteTool = { id: string; name: string; task: string; status: ToolStatus };
 type StoredEmployee = Omit<Employee, "status"> & { status: EmployeeStatus | "call-support" };
 const TOOL_GROUPS: { className: string; location: string; tools: SiteTool[] }[] = [
-  { className: "tool-buildings", location: "west area", tools: [{ id: "site-a-01", name: "Tool 01", task: "Install door" }, { id: "site-a-02", name: "Tool 02", task: "Upgrade controller" }, { id: "site-a-03", name: "Tool 03", task: "Inspect wiring" }] },
-  { className: "tool-buildings tool-buildings-right tool-buildings-room-two", location: "east area", tools: [{ id: "site-b-01", name: "Tool 01", task: "Replace lighting" }, { id: "site-b-02", name: "Tool 02", task: "Test access panel" }, { id: "site-b-03", name: "Tool 03", task: "Check emergency exit" }] },
-  { className: "tool-buildings tool-buildings-room-two-bottom", location: "south area", tools: [{ id: "site-c-04", name: "Tool 04", task: "Install safety signage" }, { id: "site-c-05", name: "Tool 05", task: "Inspect network cabinet" }] },
-  { className: "tool-buildings tool-buildings-storage", location: "storage area", tools: [{ id: "storage-01", name: "Tool 01", task: "Inventory spare parts" }, { id: "storage-02", name: "Tool 02", task: "Service power tools" }, { id: "storage-03", name: "Tool 03", task: "Check controller stock" }] }
+  { className: "tool-buildings", location: "west area", tools: [{ id: "site-a-01", name: "Tool 01", task: "Install door", status: "under-warranty" }, { id: "site-a-02", name: "Tool 02", task: "Upgrade controller", status: "in-shipment" }, { id: "site-a-03", name: "Tool 03", task: "Inspect wiring", status: "under-warranty" }] },
+  { className: "tool-buildings tool-buildings-right tool-buildings-room-two", location: "east area", tools: [{ id: "site-b-01", name: "Tool 01", task: "Replace lighting", status: "under-warranty" }, { id: "site-b-02", name: "Tool 02", task: "Test access panel", status: "out-of-service" }, { id: "site-b-03", name: "Tool 03", task: "Check emergency exit", status: "under-warranty" }] },
+  { className: "tool-buildings tool-buildings-room-two-bottom", location: "south area", tools: [{ id: "site-c-04", name: "Tool 04", task: "Install safety signage", status: "in-shipment" }, { id: "site-c-05", name: "Tool 05", task: "Inspect network cabinet", status: "under-warranty" }] },
+  { className: "tool-buildings tool-buildings-storage", location: "storage area", tools: [{ id: "storage-01", name: "Tool 01", task: "Inventory spare parts", status: "under-warranty" }, { id: "storage-02", name: "Tool 02", task: "Service power tools", status: "out-of-service" }, { id: "storage-03", name: "Tool 03", task: "Check controller stock", status: "under-warranty" }] }
 ];
 function loadEmployees(): Employee[] {
   try {
@@ -42,11 +50,21 @@ function loadCompletedToolTasks(): Record<string, string[]> {
     return {};
   }
 }
+function loadToolStatuses(): Record<string, ToolStatus> {
+  const defaults = Object.fromEntries(TOOL_GROUPS.flatMap(group => group.tools.map(tool => [tool.id, tool.status])));
+  try {
+    const raw = localStorage.getItem(TOOL_STATUSES_KEY);
+    return raw ? { ...defaults, ...JSON.parse(raw) as Record<string, ToolStatus> } : defaults;
+  } catch {
+    return defaults;
+  }
+}
 const initials = (name: string) => name.trim().split(/\s+/).slice(0,2).map(p => p[0]?.toUpperCase() ?? "").join("");
 export default function App() {
   const [employees,setEmployees] = useState<Employee[]>(loadEmployees);
   const [toolTasks,setToolTasks] = useState<Record<string,string>>(loadToolTasks);
   const [completedToolTasks,setCompletedToolTasks] = useState<Record<string,string[]>>(loadCompletedToolTasks);
+  const [toolStatuses,setToolStatuses] = useState<Record<string,ToolStatus>>(loadToolStatuses);
   const [filter,setFilter] = useState<"all"|EmployeeStatus>("all");
   const [search,setSearch] = useState("");
   const [selectedId,setSelectedId] = useState<string|null>("e-1");
@@ -66,6 +84,7 @@ export default function App() {
   useEffect(() => { localStorage.setItem(KEY,JSON.stringify(employees)); },[employees]);
   useEffect(() => { localStorage.setItem(TOOL_TASKS_KEY,JSON.stringify(toolTasks)); },[toolTasks]);
   useEffect(() => { localStorage.setItem(COMPLETED_TOOL_TASKS_KEY,JSON.stringify(completedToolTasks)); },[completedToolTasks]);
+  useEffect(() => { localStorage.setItem(TOOL_STATUSES_KEY,JSON.stringify(toolStatuses)); },[toolStatuses]);
   const selected = employees.find(e=>e.id===selectedId) ?? null;
   const counts = useMemo(() => ({
     all:employees.length,
@@ -88,6 +107,9 @@ export default function App() {
       const nextTasks = completed ? [...new Set([...tasks,task])] : tasks.filter(item=>item!==task);
       return {...old,[toolId]:nextTasks};
     });
+  }
+  function updateToolStatus(toolId:string,status:ToolStatus) {
+    setToolStatuses(old=>({...old,[toolId]:status}));
   }
   function saveToolTask(event:FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -151,7 +173,10 @@ export default function App() {
             <div className="map-label map-label-north">N <b>↑</b></div>
             <div className="map-road road-horizontal"><span></span></div><div className="map-road road-horizontal road-horizontal-upper"/><div className="map-road road-horizontal road-horizontal-top"><span></span></div><div className="map-road road-vertical"/>
             <div className="map-room room-two"><span>ROOM 2</span></div>
-            {TOOL_GROUPS.map(group=><div key={group.className} className={group.className}>{group.tools.map(tool=><button type="button" key={tool.id} className="building building-one" onClick={()=>openTool(tool,group.location)} aria-label={`Edit ${tool.name} task in ${group.location}`} title={`${tool.name}: ${toolTasks[tool.id]}`}><b>{tool.name}</b><div className="building-windows"><i/><i/><i/></div></button>)}</div>)}
+            {TOOL_GROUPS.map(group=><div key={group.className} className={group.className}>{group.tools.map(tool=>{
+              const toolStatus = toolStatuses[tool.id] ?? tool.status;
+              return <button type="button" key={tool.id} className="building building-one" onClick={()=>openTool(tool,group.location)} aria-label={`Edit ${tool.name} task in ${group.location}`} title={`${tool.name}: ${TOOL_STATUS_META[toolStatus].label} — ${toolTasks[tool.id]}`}><b>{tool.name}</b><span className="tool-status-badge" style={{"--tool-status-color":TOOL_STATUS_META[toolStatus].color} as CSSProperties}>{TOOL_STATUS_META[toolStatus].label}</span><div className="building-windows"><i/><i/><i/></div></button>;
+            })}</div>)}
             {visible.map(e=><button key={e.id} className={`employee-marker ${selectedId===e.id?"selected":""}`} style={{left:`${e.x}%`,top:`${e.y}%`,"--marker-color":STATUS_META[e.status].color} as CSSProperties} onPointerDown={event=>{event.preventDefault();dragging.current=e.id;setSelectedId(e.id);event.currentTarget.setPointerCapture(event.pointerId);}} onPointerMove={moveMarker} onPointerUp={()=>{dragging.current=null;}} onClick={()=>setSelectedId(e.id)} title={`${e.name} · ${STATUS_META[e.status].label}`}><span>{initials(e.name)}</span><small>{STATUS_META[e.status].label}</small></button>)}
             {visible.length===0&&<div className="empty-map">No employees match this filter.</div>}
             <div className="map-legend"><span><i className="legend-install"/>Install</span><span><i className="legend-repair"/>Repair</span><span><i className="legend-upgrade"/>Upgrade</span><span><i className="legend-remote"/>Remote</span><span><i className="legend-free"/>Free</span></div><div className="map-scale"><i/>20 m</div>
@@ -189,6 +214,7 @@ export default function App() {
 
     {selectedTool&&!editingToolTask&&<div className="modal-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)setSelectedTool(null);}}><div className="modal">
       <div className="modal-heading"><div><label className="modal-kicker">SITE TOOL · {selectedTool.location.toUpperCase()}</label><h2>{selectedTool.name} tasks</h2><p>Mark tasks complete as work is finished.</p></div><button type="button" className="icon-button" aria-label="Close task list" onClick={()=>setSelectedTool(null)}><X size={19}/></button></div>
+      <label htmlFor="tool-status">Tool status<select id="tool-status" value={toolStatuses[selectedTool.id] ?? selectedTool.status} onChange={e=>updateToolStatus(selectedTool.id,e.target.value as ToolStatus)}>{TOOL_STATUSES.map(status=><option key={status} value={status}>{TOOL_STATUS_META[status].label}</option>)}</select></label>
       <div className="tool-task-list" role="group" aria-label="Available tasks">{Array.from(new Set([...TASK_OPTIONS, toolTasks[selectedTool.id]].filter((task): task is string => Boolean(task)))).map(task=><label key={task} className={`tool-task-option${toolTasks[selectedTool.id]===task?" current-tool-task":""}`}>
         <input type="checkbox" aria-label={`Mark ${task} complete`} checked={completedToolTasks[selectedTool.id]?.includes(task) ?? false} onChange={event=>toggleToolTaskCompletion(selectedTool.id,task,event.target.checked)}/>
         <span>{task}</span>
