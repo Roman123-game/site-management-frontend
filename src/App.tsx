@@ -6,6 +6,7 @@ import type { Employee, EmployeeStatus } from "./types";
 
 const KEY = "fieldboard-employees-v1";
 const TOOL_TASKS_KEY = "fieldboard-tool-tasks-v1";
+const COMPLETED_TOOL_TASKS_KEY = "fieldboard-completed-tool-tasks-v1";
 const STATUSES: EmployeeStatus[] = ["install", "repair", "upgrade", "remote", "free"];
 const TASK_OPTIONS = ["Install door", "Upgrade controller", "Inspect wiring", "Replace lighting", "Test access panel", "Check emergency exit", "Install safety signage", "Inspect network cabinet", "Inventory spare parts", "Service power tools", "Check controller stock"];
 type SiteTool = { id: string; name: string; task: string };
@@ -33,10 +34,19 @@ function loadToolTasks(): Record<string, string> {
     return defaults;
   }
 }
+function loadCompletedToolTasks(): Record<string, string[]> {
+  try {
+    const raw = localStorage.getItem(COMPLETED_TOOL_TASKS_KEY);
+    return raw ? JSON.parse(raw) as Record<string, string[]> : {};
+  } catch {
+    return {};
+  }
+}
 const initials = (name: string) => name.trim().split(/\s+/).slice(0,2).map(p => p[0]?.toUpperCase() ?? "").join("");
 export default function App() {
   const [employees,setEmployees] = useState<Employee[]>(loadEmployees);
   const [toolTasks,setToolTasks] = useState<Record<string,string>>(loadToolTasks);
+  const [completedToolTasks,setCompletedToolTasks] = useState<Record<string,string[]>>(loadCompletedToolTasks);
   const [filter,setFilter] = useState<"all"|EmployeeStatus>("all");
   const [search,setSearch] = useState("");
   const [selectedId,setSelectedId] = useState<string|null>("e-1");
@@ -55,6 +65,7 @@ export default function App() {
 
   useEffect(() => { localStorage.setItem(KEY,JSON.stringify(employees)); },[employees]);
   useEffect(() => { localStorage.setItem(TOOL_TASKS_KEY,JSON.stringify(toolTasks)); },[toolTasks]);
+  useEffect(() => { localStorage.setItem(COMPLETED_TOOL_TASKS_KEY,JSON.stringify(completedToolTasks)); },[completedToolTasks]);
   const selected = employees.find(e=>e.id===selectedId) ?? null;
   const counts = useMemo(() => ({
     all:employees.length,
@@ -74,6 +85,13 @@ export default function App() {
   function chooseToolTask(task:string) {
     setToolTaskDraft(task);
     setEditingToolTask(true);
+  }
+  function toggleToolTaskCompletion(toolId:string,task:string,completed:boolean) {
+    setCompletedToolTasks(old=>{
+      const tasks = old[toolId] ?? [];
+      const nextTasks = completed ? [...new Set([...tasks,task])] : tasks.filter(item=>item!==task);
+      return {...old,[toolId]:nextTasks};
+    });
   }
   function saveToolTask(event:FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -173,7 +191,11 @@ export default function App() {
 
     {selectedTool&&!editingToolTask&&<div className="modal-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)setSelectedTool(null);}}><div className="modal">
       <div className="modal-heading"><div><label className="modal-kicker">SITE TOOL · {selectedTool.location.toUpperCase()}</label><h2>{selectedTool.name} tasks</h2><p>Choose a task to open it for editing.</p></div><button type="button" className="icon-button" aria-label="Close task list" onClick={()=>setSelectedTool(null)}><X size={19}/></button></div>
-      <div className="tool-task-list" role="list" aria-label="Available tasks">{Array.from(new Set([toolTasks[selectedTool.id], ...TASK_OPTIONS].filter((task): task is string => Boolean(task)))).map(task=><button type="button" role="listitem" key={task} className={`tool-task-option${toolTasks[selectedTool.id]===task?" current-tool-task":""}`} onClick={()=>chooseToolTask(task)}><span>{task}</span>{toolTasks[selectedTool.id]===task&&<span className="current-task-label">CURRENT</span>}</button>)}</div>
+      <div className="tool-task-list" role="group" aria-label="Available tasks">{Array.from(new Set([...TASK_OPTIONS, toolTasks[selectedTool.id]].filter((task): task is string => Boolean(task)))).map(task=><label key={task} className={`tool-task-option${toolTasks[selectedTool.id]===task?" current-tool-task":""}`}>
+        <input type="checkbox" aria-label={`Mark ${task} complete`} checked={completedToolTasks[selectedTool.id]?.includes(task) ?? false} onChange={event=>toggleToolTaskCompletion(selectedTool.id,task,event.target.checked)}/>
+        <span>{task}</span>
+        {toolTasks[selectedTool.id]===task&&<span className="current-task-label">CURRENT</span>}
+      </label>)}</div>
       <div className="modal-actions"><button type="button" className="secondary-button" onClick={()=>{setToolTaskDraft(toolTasks[selectedTool.id] ?? "");setEditingToolTask(true);}}>Edit current task</button></div>
     </div></div>}
 
