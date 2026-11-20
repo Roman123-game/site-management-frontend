@@ -121,6 +121,9 @@ button{cursor:pointer}
 .details-status-actions{display:flex;align-items:flex-end;gap:8px}
 .details-status-actions .details-status{flex:1;min-width:115px}
 .tool-status-badge{display:block;max-width:100%;border-radius:4px;padding:3px 5px;background:color-mix(in srgb,var(--tool-status-color) 12%,white);border:1px solid color-mix(in srgb,var(--tool-status-color) 35%,white);color:var(--tool-status-color);font-size:7px;font-weight:700;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tool-modal-status{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.tool-modal-status>span:first-child{font-size:10px;font-weight:700;color:#667386}
+.tool-status-badge-modal{padding:5px 8px;font-size:9px}
 
 @media(max-width:850px){.details-status-actions{flex:1 1 30%}}
 @media(max-width:560px){.details-status-actions{width:100%;flex-basis:100%}}
