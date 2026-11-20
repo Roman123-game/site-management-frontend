@@ -18,3 +18,29 @@ export const DEFAULT_EMPLOYEES: Employee[] = [
   {id:"e-5",name:"Daniel Green",role:"Field technician",status:"install",x:78,y:72,task:"Unit C · Equipment",phone:"+1 555 0105"},
   {id:"e-6",name:"James Wilson",role:"Maintenance",status:"free",x:57,y:51,task:"Available for assignment",phone:"+1 555 0106"}
 ];
+
+export type ToolStatus = "in-shipment" | "under-warranty" | "out-of-service";
+
+export interface SiteTool {
+  id: string;
+  name: string;
+  task: string;
+  status: ToolStatus;
+}
+
+export type StoredEmployee = Omit<Employee, "status"> & {
+  status: EmployeeStatus | "call-support";
+};
+
+export type ToolTasks = Record<string, string>;
+export type CompletedToolTasks = Record<string, string[]>;
+export type ToolStatuses = Record<string, ToolStatus>;
+export type DirectoryTasks = Record<string, Record<string, string[]>>;
+
+export interface ToolGroup {
+  className: string;
+  location: string;
+  tools: SiteTool[];
+}
+
+export type SelectedSiteTool = SiteTool & { location: string };

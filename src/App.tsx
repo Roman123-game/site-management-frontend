@@ -2,7 +2,19 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { FormEvent, PointerEvent, CSSProperties } from "react";
 import { Activity, ArrowDownUp, Check, CircleHelp, ClipboardList, HardHat, LayoutDashboard, MapPin, MoreHorizontal, Plus, Search, Settings2, ShieldCheck, SlidersHorizontal, Trash2, Users, X } from "lucide-react";
 import { DEFAULT_EMPLOYEES, STATUS_META } from "./types";
-import type { Employee, EmployeeStatus } from "./types";
+import type {
+  CompletedToolTasks,
+  DirectoryTasks,
+  Employee,
+  EmployeeStatus,
+  SiteTool,
+  StoredEmployee,
+  SelectedSiteTool,
+  ToolStatuses,
+  ToolGroup,
+  ToolTasks,
+  ToolStatus
+} from "./types";
 
 const KEY = "fieldboard-employees-v1";
 const TOOL_TASKS_KEY = "fieldboard-tool-tasks-v1";
@@ -20,16 +32,13 @@ const SHIPMENT_BRACKETS_TASKS = [
   "East Axis (XYZ): remove travel brackets from east axis",
   "West Axis (XYZ): remove travel brackets from west axis"
 ];
-type ToolStatus = "in-shipment" | "under-warranty" | "out-of-service";
 const TOOL_STATUSES: ToolStatus[] = ["in-shipment", "under-warranty", "out-of-service"];
 const TOOL_STATUS_META: Record<ToolStatus, {label:string;color:string}> = {
   "in-shipment":{label:"In shipment",color:"#3b82f6"},
   "under-warranty":{label:"Under warranty",color:"#10a779"},
   "out-of-service":{label:"Out of service",color:"#ef4444"}
 };
-type SiteTool = { id: string; name: string; task: string; status: ToolStatus };
-type StoredEmployee = Omit<Employee, "status"> & { status: EmployeeStatus | "call-support" };
-const TOOL_GROUPS: { className: string; location: string; tools: SiteTool[] }[] = [
+const TOOL_GROUPS: ToolGroup[] = [
   { className: "tool-buildings", location: "west area", tools: [{ id: "site-a-01", name: "Tool 01", task: "Logistics Integrity", status: "under-warranty" }, { id: "site-a-02", name: "Tool 02", task: "Shipment Brackets", status: "in-shipment" }, { id: "site-a-03", name: "Tool 03", task: "Mechanical", status: "under-warranty" }] },
   { className: "tool-buildings tool-buildings-right tool-buildings-room-two", location: "east area", tools: [{ id: "site-b-01", name: "Tool 01", task: "PC & Electronics", status: "under-warranty" }, { id: "site-b-02", name: "Tool 02", task: "Hookups & Facilites", status: "out-of-service" }, { id: "site-b-03", name: "Tool 03", task: "Logistics Integrity", status: "under-warranty" }] },
   { className: "tool-buildings tool-buildings-room-two-bottom", location: "south area", tools: [{ id: "site-c-04", name: "Tool 04", task: "Shipment Brackets", status: "in-shipment" }, { id: "site-c-05", name: "Tool 05", task: "Mechanical", status: "under-warranty" }] },
@@ -43,36 +52,36 @@ function loadEmployees(): Employee[] {
   }
   catch { return DEFAULT_EMPLOYEES; }
 }
-function loadToolTasks(): Record<string, string> {
+function loadToolTasks(): ToolTasks {
   const defaults = Object.fromEntries(TOOL_GROUPS.flatMap(group => group.tools.map(tool => [tool.id, tool.task])));
   try {
     const raw = localStorage.getItem(TOOL_TASKS_KEY);
     if (!raw) return defaults;
-    const saved = JSON.parse(raw) as Record<string, string>;
+    const saved = JSON.parse(raw) as ToolTasks;
     return Object.fromEntries(Object.entries({...defaults,...saved}).map(([toolId,task])=>[toolId,typeof task==="string"&&task?task:""]));
   } catch {
     return defaults;
   }
 }
-function loadCompletedToolTasks(): Record<string, string[]> {
+function loadCompletedToolTasks(): CompletedToolTasks {
   try {
     const raw = localStorage.getItem(COMPLETED_TOOL_TASKS_KEY);
-    return raw ? JSON.parse(raw) as Record<string, string[]> : {};
+    return raw ? JSON.parse(raw) as CompletedToolTasks : {};
   } catch {
     return {};
   }
 }
-function loadToolStatuses(): Record<string, ToolStatus> {
+function loadToolStatuses(): ToolStatuses {
   const defaults = Object.fromEntries(TOOL_GROUPS.flatMap(group => group.tools.map(tool => [tool.id, tool.status])));
   try {
     const raw = localStorage.getItem(TOOL_STATUSES_KEY);
-    return raw ? { ...defaults, ...JSON.parse(raw) as Record<string, ToolStatus> } : defaults;
+    return raw ? { ...defaults, ...JSON.parse(raw) as ToolStatuses } : defaults;
   } catch {
     return defaults;
   }
 }
-function loadDirectoryTasks(): Record<string, Record<string, string[]>> {
-  const defaults: Record<string, Record<string, string[]>> = {};
+function loadDirectoryTasks(): DirectoryTasks {
+  const defaults: DirectoryTasks = {};
   for (const tool of TOOL_GROUPS.flatMap(group => group.tools)) {
     defaults[tool.id] = Object.fromEntries(TOOL_DIRECTORIES.map(directory => [
       directory,
@@ -83,7 +92,7 @@ function loadDirectoryTasks(): Record<string, Record<string, string[]>> {
   try {
     const raw = localStorage.getItem(TOOL_DIRECTORY_TASKS_KEY);
     if (!raw) return defaults;
-    const saved = JSON.parse(raw) as Record<string, Record<string, string[]>>;
+    const saved = JSON.parse(raw) as DirectoryTasks;
     return Object.fromEntries(Object.entries(defaults).map(([toolId,directories])=>{
       const savedDirectories=saved[toolId] ?? {};
       const logistics=[...new Set([...(savedDirectories["Logistics Integrity"]??[]),...LOGISTICS_INTEGRITY_TASKS])]
@@ -98,14 +107,14 @@ function loadDirectoryTasks(): Record<string, Record<string, string[]>> {
 const initials = (name: string) => name.trim().split(/\s+/).slice(0,2).map(p => p[0]?.toUpperCase() ?? "").join("");
 export default function App() {
   const [employees,setEmployees] = useState<Employee[]>(loadEmployees);
-  const [toolTasks,setToolTasks] = useState<Record<string,string>>(loadToolTasks);
-  const [completedToolTasks,setCompletedToolTasks] = useState<Record<string,string[]>>(loadCompletedToolTasks);
-  const [toolStatuses,setToolStatuses] = useState<Record<string,ToolStatus>>(loadToolStatuses);
-  const [directoryTasks,setDirectoryTasks] = useState<Record<string,Record<string,string[]>>>(loadDirectoryTasks);
+  const [toolTasks,setToolTasks] = useState<ToolTasks>(loadToolTasks);
+  const [completedToolTasks,setCompletedToolTasks] = useState<CompletedToolTasks>(loadCompletedToolTasks);
+  const [toolStatuses,setToolStatuses] = useState<ToolStatuses>(loadToolStatuses);
+  const [directoryTasks,setDirectoryTasks] = useState<DirectoryTasks>(loadDirectoryTasks);
   const [filter,setFilter] = useState<"all"|EmployeeStatus>("all");
   const [search,setSearch] = useState("");
   const [selectedId,setSelectedId] = useState<string|null>("e-1");
-  const [selectedTool,setSelectedTool] = useState<(SiteTool & {location:string})|null>(null);
+  const [selectedTool,setSelectedTool] = useState<SelectedSiteTool|null>(null);
   const [toolTaskDraft,setToolTaskDraft] = useState("");
   const [toolDirectoryDraft,setToolDirectoryDraft] = useState(TOOL_DIRECTORIES[0]);
   const [editingToolTask,setEditingToolTask] = useState(false);
