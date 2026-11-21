@@ -262,7 +262,7 @@ export default function App() {
       <div className="workspace-label">WORKSPACE</div>
       <button className={`nav-item ${activeTab==="overview"?"active":""}`} onClick={()=>setActiveTab("overview")}><LayoutDashboard size={18}/>Overview</button>
       <button className={`nav-item ${activeTab==="tickets"?"active":""}`} onClick={()=>setActiveTab("tickets")}><ClipboardList size={18}/>Tickets</button>
-      <button className="nav-item" onClick={()=>setShowGuide(true)}><ClipboardList size={18}/>Activity guide</button>
+      <button className="nav-item" onClick={()=>setShowGuide(true)}><CircleHelp size={18}/>Activity guide</button>
       <div className="sidebar-spacer"/>
       <div className="site-card"><div className="site-card-icon"><MapPin size={17}/></div><div><strong>North District Site</strong><span>Project · ND-024</span></div><MoreHorizontal size={18} className="muted-icon"/></div>
       <button className="nav-item muted-nav" onClick={()=>setShowGuide(true)}><Settings2 size={18}/>Settings</button>
