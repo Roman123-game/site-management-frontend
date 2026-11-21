@@ -145,6 +145,7 @@ button{cursor:pointer}
 .ticket-card-top strong{font-size:9px;letter-spacing:.8px;color:#97a2b1}
 .ticket-status{display:inline-flex;align-items:center;border-radius:5px;padding:4px 7px;font-size:9px;font-weight:700}
 .ticket-card h3{font:700 13px Manrope,sans-serif;color:#263449;margin:13px 0 9px}
+.ticket-tool-number{font-size:10px;font-weight:700;color:#68778b;margin-bottom:7px}
 .ticket-location{display:flex;align-items:center;gap:5px;font-size:10px;color:#8994a4}
 .ticket-card-footer{display:flex;align-items:center;justify-content:space-between;border-top:1px solid #edf0f4;margin-top:12px;padding-top:10px;font-size:10px;color:#68778b}
 .ticket-card-footer b{font-size:9px}

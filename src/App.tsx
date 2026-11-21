@@ -48,11 +48,11 @@ const TICKET_STATUS_META: Record<TicketStatus,{label:string;color:string;soft:st
   resolved:{label:"Resolved",color:"#10a779",soft:"#e5f7f0"}
 };
 const DEFAULT_TICKETS: Ticket[] = [
-  {id:"TK-1001",title:"Faulty panel connection",location:"Room 1 · Panel A",assignee:"John Smith",status:"in-progress",priority:"High",created:"Today, 09:20"},
-  {id:"TK-1002",title:"Network equipment upgrade",location:"Room 2 · Level 2",assignee:"Alex Brown",status:"assigned",priority:"Medium",created:"Today, 08:45"},
-  {id:"TK-1003",title:"Replace damaged cable",location:"Eng Room · Bay 4",assignee:"David Cohen",status:"open",priority:"High",created:"Yesterday, 16:10"},
-  {id:"TK-1004",title:"Routine maintenance check",location:"Gowning Room",assignee:"Michael Levy",status:"resolved",priority:"Low",created:"Yesterday, 13:30"},
-  {id:"TK-1005",title:"Equipment installation",location:"Storage Area",assignee:"Daniel Green",status:"assigned",priority:"Medium",created:"Nov 20, 11:15"}
+  {id:"TK-1001",title:"Faulty panel connection",toolNumber:"01",location:"Room 1 · Panel A",assignee:"John Smith",status:"in-progress",priority:"High",created:"Today, 09:20"},
+  {id:"TK-1002",title:"Network equipment upgrade",toolNumber:"02",location:"Room 2 · Level 2",assignee:"Alex Brown",status:"assigned",priority:"Medium",created:"Today, 08:45"},
+  {id:"TK-1003",title:"Replace damaged cable",toolNumber:"03",location:"Eng Room · Bay 4",assignee:"David Cohen",status:"open",priority:"High",created:"Yesterday, 16:10"},
+  {id:"TK-1004",title:"Routine maintenance check",toolNumber:"04",location:"Gowning Room",assignee:"Michael Levy",status:"resolved",priority:"Low",created:"Yesterday, 13:30"},
+  {id:"TK-1005",title:"Equipment installation",toolNumber:"05",location:"Storage Area",assignee:"Daniel Green",status:"assigned",priority:"Medium",created:"Nov 20, 11:15"}
 ];
 const TOOL_GROUPS: ToolGroup[] = [
   { className: "tool-buildings", location: "west area", tools: [{ id: "site-a-01", name: "Tool 01", task: "Logistics Integrity", status: "under-warranty" }, { id: "site-a-02", name: "Tool 02", task: "Shipment Brackets", status: "in-shipment" }, { id: "site-a-03", name: "Tool 03", task: "Mechanical", status: "under-warranty" }] },
@@ -141,6 +141,7 @@ export default function App() {
   const [showAdd,setShowAdd] = useState(false);
   const [showTicketAdd,setShowTicketAdd] = useState(false);
   const [ticketTitle,setTicketTitle] = useState("");
+  const [ticketToolNumber,setTicketToolNumber] = useState("");
   const [ticketLocation,setTicketLocation] = useState("");
   const [ticketAssignee,setTicketAssignee] = useState("");
   const [ticketStatus,setTicketStatus] = useState<TicketStatus>("open");
@@ -227,6 +228,7 @@ export default function App() {
     const item:Ticket={
       id:`TK-${nextNumber}`,
       title:ticketTitle.trim(),
+      toolNumber:ticketToolNumber.trim(),
       location:ticketLocation.trim()||"North District Site",
       assignee:ticketAssignee.trim()||"Unassigned",
       status:ticketStatus,
@@ -235,7 +237,7 @@ export default function App() {
     };
     setTickets(old=>[item,...old]);
     setSelectedTicketId(item.id);
-    setTicketTitle("");setTicketLocation("");setTicketAssignee("");setTicketStatus("open");setTicketPriority("Medium");
+    setTicketTitle("");setTicketToolNumber("");setTicketLocation("");setTicketAssignee("");setTicketStatus("open");setTicketPriority("Medium");
     setShowTicketAdd(false);
   }
   function removeEmployee(id:string) {
@@ -254,7 +256,6 @@ export default function App() {
       <div className="workspace-label">WORKSPACE</div>
       <button className={`nav-item ${activeTab==="overview"?"active":""}`} onClick={()=>setActiveTab("overview")}><LayoutDashboard size={18}/>Overview</button>
       <button className={`nav-item ${activeTab==="tickets"?"active":""}`} onClick={()=>setActiveTab("tickets")}><ClipboardList size={18}/>Tickets</button>
-      {activeTab==="overview"&&<button className="nav-item" onClick={()=>{setFilter("all");}}><Users size={18}/>Employees <span className="nav-count">{employees.length}</span></button>}
       <button className="nav-item" onClick={()=>setShowGuide(true)}><ClipboardList size={18}/>Activity guide</button>
       <div className="sidebar-spacer"/>
       <div className="site-card"><div className="site-card-icon"><MapPin size={17}/></div><div><strong>North District Site</strong><span>Project · ND-024</span></div><MoreHorizontal size={18} className="muted-icon"/></div>
@@ -280,6 +281,7 @@ export default function App() {
         <div className="ticket-grid">{visibleTickets.map(ticket=><button key={ticket.id} className={`ticket-card ${selectedTicketId===ticket.id?"ticket-selected":""}`} onClick={()=>setSelectedTicketId(ticket.id)}>
           <div className="ticket-card-top"><strong>{ticket.id}</strong><span className="ticket-status" style={{background:TICKET_STATUS_META[ticket.status].soft,color:TICKET_STATUS_META[ticket.status].color}}>{TICKET_STATUS_META[ticket.status].label}</span></div>
           <h3>{ticket.title}</h3>
+          <div className="ticket-tool-number">Tool {ticket.toolNumber}</div>
           <div className="ticket-location"><MapPin size={14}/>{ticket.location}</div>
           <div className="ticket-card-footer"><span>{ticket.assignee}</span><b className={`priority-${ticket.priority.toLowerCase()}`}>{ticket.priority}</b></div>
         </button>)}</div>
@@ -287,6 +289,7 @@ export default function App() {
       {selectedTicket&&<section className="ticket-details-card">
         <div className="ticket-details-heading"><div><label>SELECTED TICKET</label><strong>{selectedTicket.id}</strong></div><span className="ticket-status" style={{background:TICKET_STATUS_META[selectedTicket.status].soft,color:TICKET_STATUS_META[selectedTicket.status].color}}>{TICKET_STATUS_META[selectedTicket.status].label}</span></div>
         <div className="ticket-details-title"><strong>{selectedTicket.title}</strong><span><MapPin size={13}/>{selectedTicket.location}</span></div>
+        <div className="ticket-details-field"><label>TOOL NUMBER</label><strong>Tool {selectedTicket.toolNumber}</strong></div>
         <div className="ticket-details-field"><label>ASSIGNEE</label><strong>{selectedTicket.assignee}</strong></div>
         <div className="ticket-details-field"><label>STATUS</label><select value={selectedTicket.status} onChange={event=>setTickets(old=>old.map(ticket=>ticket.id===selectedTicket.id?{...ticket,status:event.target.value as TicketStatus}:ticket))}>{TICKET_STATUSES.map(status=><option key={status} value={status}>{TICKET_STATUS_META[status].label}</option>)}</select></div>
       </section>}</>}
@@ -345,6 +348,7 @@ export default function App() {
     {showTicketAdd&&<div className="modal-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)setShowTicketAdd(false);}}><form className="modal" onSubmit={addTicket}>
       <div className="modal-heading"><div><label className="modal-kicker">TICKET MANAGEMENT</label><h2>Add ticket</h2><p>Create a new assignment for the site team.</p></div><button type="button" className="icon-button" onClick={()=>setShowTicketAdd(false)}><X size={19}/></button></div>
       <label>Ticket title<input autoFocus required value={ticketTitle} onChange={e=>setTicketTitle(e.target.value)} placeholder="Describe the issue"/></label>
+      <label>Tool number<input type="number" min="1" value={ticketToolNumber} onChange={e=>setTicketToolNumber(e.target.value)} placeholder="e.g. 01"/></label>
       <label>Location<input value={ticketLocation} onChange={e=>setTicketLocation(e.target.value)} placeholder="e.g. Room 2 · Bay 4"/></label>
       <label>Assignee<input value={ticketAssignee} onChange={e=>setTicketAssignee(e.target.value)} placeholder="Employee name"/></label>
       <label>Status<select value={ticketStatus} onChange={e=>setTicketStatus(e.target.value as TicketStatus)}>{TICKET_STATUSES.map(status=><option key={status} value={status}>{TICKET_STATUS_META[status].label}</option>)}</select></label>

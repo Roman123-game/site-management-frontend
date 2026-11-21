@@ -42,6 +42,7 @@ export type TicketStatus = "open" | "assigned" | "in-progress" | "resolved";
 export interface Ticket {
   id: string;
   title: string;
+  toolNumber: string;
   location: string;
   assignee: string;
   status: TicketStatus;
