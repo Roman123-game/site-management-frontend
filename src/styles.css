@@ -138,7 +138,11 @@ button{cursor:pointer}
 .task-confirm-modal{width:min(100%,380px)}
 .task-confirm-name{padding:12px 13px;border:1px solid #dfe6f2;border-radius:7px;background:#f6f9ff;color:#344054;font-size:13px}
 .tickets-section{margin-bottom:14px}
+.ticket-toolbar{display:flex;justify-content:flex-end;align-items:center;gap:8px;margin:-3px 0 12px}
 .ticket-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.ticket-search{height:38px;width:min(100%,320px);margin:0}
+.ticket-search input{font-size:11px}
+.ticket-empty{grid-column:1/-1;background:#fff;border:1px solid #e3e8ef;border-radius:10px}
 .ticket-card{text-align:left;border:1px solid #e3e8ef;border-radius:10px;background:#fff;padding:14px;min-width:0;transition:.15s}
 .ticket-card:hover,.ticket-selected{border-color:#9dbcf4;box-shadow:0 0 0 2px #2866dc0b}
 .ticket-card-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -159,4 +163,4 @@ button{cursor:pointer}
 
 @media(max-width:850px){.details-status-actions{flex:1 1 30%}}
 @media(max-width:850px){.ticket-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.ticket-details-card{grid-template-columns:120px minmax(0,1fr);align-items:center}}
-@media(max-width:560px){.details-status-actions{width:100%;flex-basis:100%}.ticket-grid{grid-template-columns:1fr}.ticket-details-card{grid-template-columns:1fr}}
+@media(max-width:560px){.details-status-actions{width:100%;flex-basis:100%}.ticket-toolbar{justify-content:stretch;flex-wrap:wrap}.ticket-search{flex:1 1 100%;width:100%}.ticket-toolbar>.secondary-button{width:100%}.ticket-grid{grid-template-columns:1fr}.ticket-details-card{grid-template-columns:1fr}}

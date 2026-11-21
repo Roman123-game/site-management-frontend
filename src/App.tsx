@@ -127,6 +127,7 @@ export default function App() {
   const [tickets,setTickets] = useState<Ticket[]>(DEFAULT_TICKETS);
   const [selectedTicketId,setSelectedTicketId] = useState<string|null>("TK-1001");
   const [ticketFilter,setTicketFilter] = useState<"all"|TicketStatus>("all");
+  const [ticketSearch,setTicketSearch] = useState("");
   const [toolTasks,setToolTasks] = useState<ToolTasks>(loadToolTasks);
   const [completedToolTasks,setCompletedToolTasks] = useState<CompletedToolTasks>(loadCompletedToolTasks);
   const [toolStatuses,setToolStatuses] = useState<ToolStatuses>(loadToolStatuses);
@@ -161,7 +162,12 @@ export default function App() {
   useEffect(() => { localStorage.setItem(TOOL_STATUSES_KEY,JSON.stringify(toolStatuses)); },[toolStatuses]);
   useEffect(() => { localStorage.setItem(TOOL_DIRECTORY_TASKS_KEY,JSON.stringify(directoryTasks)); },[directoryTasks]);
   const selected = employees.find(e=>e.id===selectedId) ?? null;
-  const visibleTickets = tickets.filter(ticket=>ticketFilter==="all"||ticket.status===ticketFilter);
+  const visibleTickets = tickets.filter(ticket=>{
+    const matchesStatus=ticketFilter==="all"||ticket.status===ticketFilter;
+    const query=ticketSearch.trim().toLowerCase().replace(/^tool\s*/,"");
+    const matchesTool=!query||ticket.toolNumber.toLowerCase().includes(query)||Number(ticket.toolNumber)===Number(query);
+    return matchesStatus&&matchesTool;
+  });
   const selectedTicket = tickets.find(ticket=>ticket.id===selectedTicketId) ?? null;
   const counts = useMemo(() => ({
     all:employees.length,
@@ -277,14 +283,15 @@ export default function App() {
         {TICKET_STATUSES.map(status=><button key={status} className={`stat-card ${ticketFilter===status?"chosen":""}`} onClick={()=>setTicketFilter(ticketFilter===status?"all":status)}><div className="stat-top"><span>{TICKET_STATUS_META[status].label}</span><i className="status-dot" style={{background:TICKET_STATUS_META[status].color}}/></div><div className="stat-number">{tickets.filter(ticket=>ticket.status===status).length}</div><div className="stat-foot">{status==="resolved"?"Completed":"Requires attention"}</div></button>)}
       </section>
       <section className="tickets-section">
-        <div className="section-heading"><div><div className="section-title-row"><h2>Tickets</h2><span className="map-live"><i/>LIVE VIEW</span></div><p>Manage active requests and assignments across the site.</p></div><div className="map-actions"><button className="secondary-button" onClick={()=>setTicketFilter("all")}><SlidersHorizontal size={16}/>Reset filters</button></div></div>
+        <div className="section-heading"><div><div className="section-title-row"><h2>Tickets</h2><span className="map-live"><i/>LIVE VIEW</span></div><p>Manage active requests and assignments across the site.</p></div></div>
+        <div className="ticket-toolbar"><label className="search-box ticket-search"><Search size={16}/><input aria-label="Search tickets by tool number" value={ticketSearch} onChange={event=>setTicketSearch(event.target.value)} placeholder="Search by tool number..."/></label><button className="secondary-button" onClick={()=>{setTicketFilter("all");setTicketSearch("");}}><SlidersHorizontal size={16}/>Reset filters</button></div>
         <div className="ticket-grid">{visibleTickets.map(ticket=><button key={ticket.id} className={`ticket-card ${selectedTicketId===ticket.id?"ticket-selected":""}`} onClick={()=>setSelectedTicketId(ticket.id)}>
           <div className="ticket-card-top"><strong>{ticket.id}</strong><span className="ticket-status" style={{background:TICKET_STATUS_META[ticket.status].soft,color:TICKET_STATUS_META[ticket.status].color}}>{TICKET_STATUS_META[ticket.status].label}</span></div>
           <h3>{ticket.title}</h3>
           <div className="ticket-tool-number">Tool {ticket.toolNumber}</div>
           <div className="ticket-location"><MapPin size={14}/>{ticket.location}</div>
           <div className="ticket-card-footer"><span>{ticket.assignee}</span><b className={`priority-${ticket.priority.toLowerCase()}`}>{ticket.priority}</b></div>
-        </button>)}</div>
+        </button>)}{visibleTickets.length===0&&<div className="empty-list ticket-empty">No tickets match this tool number.</div>}</div>
       </section>
       {selectedTicket&&<section className="ticket-details-card">
         <div className="ticket-details-heading"><div><label>SELECTED TICKET</label><strong>{selectedTicket.id}</strong></div><span className="ticket-status" style={{background:TICKET_STATUS_META[selectedTicket.status].soft,color:TICKET_STATUS_META[selectedTicket.status].color}}>{TICKET_STATUS_META[selectedTicket.status].label}</span></div>
