@@ -147,7 +147,7 @@ button{cursor:pointer}
 .ticket-empty{grid-column:1/-1;background:#fff;border:1px solid #e3e8ef;border-radius:10px}
 .ticket-card{text-align:left;border:1px solid #dfe7f3;border-radius:10px;background:#f8fbff;padding:14px;min-width:0;transition:.15s}
 .ticket-card:hover{border-color:#b4c9ec;box-shadow:0 0 0 2px #2866dc0b}
-.ticket-selected{border-color:#8fb3ec;background:#f2f7ff;box-shadow:0 0 0 2px #2866dc12}
+.ticket-selected{border-color:#8fb3ec;background:#f8fbff;box-shadow:0 0 0 2px #2866dc12}
 .ticket-card-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .ticket-card-top strong{font-size:9px;letter-spacing:.8px;color:#97a2b1}
 .ticket-status{display:inline-flex;align-items:center;border-radius:5px;padding:4px 7px;font-size:9px;font-weight:700}
