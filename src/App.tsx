@@ -7,6 +7,8 @@ import type {
   DirectoryTasks,
   Employee,
   EmployeeStatus,
+  Ticket,
+  TicketStatus,
   SiteTool,
   StoredEmployee,
   SelectedSiteTool,
@@ -38,6 +40,20 @@ const TOOL_STATUS_META: Record<ToolStatus, {label:string;color:string}> = {
   "under-warranty":{label:"Under warranty",color:"#10a779"},
   "out-of-service":{label:"Out of service",color:"#ef4444"}
 };
+const TICKET_STATUSES: TicketStatus[] = ["open","assigned","in-progress","resolved"];
+const TICKET_STATUS_META: Record<TicketStatus,{label:string;color:string;soft:string}> = {
+  open:{label:"Open",color:"#ef4444",soft:"#feecec"},
+  assigned:{label:"Assigned",color:"#3b82f6",soft:"#eaf2ff"},
+  "in-progress":{label:"In progress",color:"#f59e0b",soft:"#fff5df"},
+  resolved:{label:"Resolved",color:"#10a779",soft:"#e5f7f0"}
+};
+const DEFAULT_TICKETS: Ticket[] = [
+  {id:"TK-1001",title:"Faulty panel connection",location:"Room 1 · Panel A",assignee:"John Smith",status:"in-progress",priority:"High",created:"Today, 09:20"},
+  {id:"TK-1002",title:"Network equipment upgrade",location:"Room 2 · Level 2",assignee:"Alex Brown",status:"assigned",priority:"Medium",created:"Today, 08:45"},
+  {id:"TK-1003",title:"Replace damaged cable",location:"Eng Room · Bay 4",assignee:"David Cohen",status:"open",priority:"High",created:"Yesterday, 16:10"},
+  {id:"TK-1004",title:"Routine maintenance check",location:"Gowning Room",assignee:"Michael Levy",status:"resolved",priority:"Low",created:"Yesterday, 13:30"},
+  {id:"TK-1005",title:"Equipment installation",location:"Storage Area",assignee:"Daniel Green",status:"assigned",priority:"Medium",created:"Nov 20, 11:15"}
+];
 const TOOL_GROUPS: ToolGroup[] = [
   { className: "tool-buildings", location: "west area", tools: [{ id: "site-a-01", name: "Tool 01", task: "Logistics Integrity", status: "under-warranty" }, { id: "site-a-02", name: "Tool 02", task: "Shipment Brackets", status: "in-shipment" }, { id: "site-a-03", name: "Tool 03", task: "Mechanical", status: "under-warranty" }] },
   { className: "tool-buildings tool-buildings-right tool-buildings-room-two", location: "east area", tools: [{ id: "site-b-01", name: "Tool 01", task: "PC & Electronics", status: "under-warranty" }, { id: "site-b-02", name: "Tool 02", task: "Hookups & Facilites", status: "out-of-service" }, { id: "site-b-03", name: "Tool 03", task: "Logistics Integrity", status: "under-warranty" }] },
@@ -107,6 +123,10 @@ function loadDirectoryTasks(): DirectoryTasks {
 const initials = (name: string) => name.trim().split(/\s+/).slice(0,2).map(p => p[0]?.toUpperCase() ?? "").join("");
 export default function App() {
   const [employees,setEmployees] = useState<Employee[]>(loadEmployees);
+  const [activeTab,setActiveTab] = useState<"overview"|"tickets">("overview");
+  const [tickets,setTickets] = useState<Ticket[]>(DEFAULT_TICKETS);
+  const [selectedTicketId,setSelectedTicketId] = useState<string|null>("TK-1001");
+  const [ticketFilter,setTicketFilter] = useState<"all"|TicketStatus>("all");
   const [toolTasks,setToolTasks] = useState<ToolTasks>(loadToolTasks);
   const [completedToolTasks,setCompletedToolTasks] = useState<CompletedToolTasks>(loadCompletedToolTasks);
   const [toolStatuses,setToolStatuses] = useState<ToolStatuses>(loadToolStatuses);
@@ -119,6 +139,12 @@ export default function App() {
   const [toolDirectoryDraft,setToolDirectoryDraft] = useState(TOOL_DIRECTORIES[0]);
   const [editingToolTask,setEditingToolTask] = useState(false);
   const [showAdd,setShowAdd] = useState(false);
+  const [showTicketAdd,setShowTicketAdd] = useState(false);
+  const [ticketTitle,setTicketTitle] = useState("");
+  const [ticketLocation,setTicketLocation] = useState("");
+  const [ticketAssignee,setTicketAssignee] = useState("");
+  const [ticketStatus,setTicketStatus] = useState<TicketStatus>("open");
+  const [ticketPriority,setTicketPriority] = useState<"Low"|"Medium"|"High">("Medium");
   const [showGuide,setShowGuide] = useState(false);
   const [name,setName] = useState("");
   const [role,setRole] = useState("Field technician");
@@ -134,6 +160,8 @@ export default function App() {
   useEffect(() => { localStorage.setItem(TOOL_STATUSES_KEY,JSON.stringify(toolStatuses)); },[toolStatuses]);
   useEffect(() => { localStorage.setItem(TOOL_DIRECTORY_TASKS_KEY,JSON.stringify(directoryTasks)); },[directoryTasks]);
   const selected = employees.find(e=>e.id===selectedId) ?? null;
+  const visibleTickets = tickets.filter(ticket=>ticketFilter==="all"||ticket.status===ticketFilter);
+  const selectedTicket = tickets.find(ticket=>ticket.id===selectedTicketId) ?? null;
   const counts = useMemo(() => ({
     all:employees.length,
     install:employees.filter(e=>e.status==="install").length,
@@ -192,6 +220,24 @@ export default function App() {
     const item:Employee={id:crypto.randomUUID(),name:name.trim(),role:role.trim()||"Field technician",status,x:48+Math.random()*8,y:43+Math.random()*10,task:task.trim()||(status==="free"?"Available for assignment":"New assignment"),phone:phone.trim()};
     setEmployees(old=>[...old,item]); setSelectedId(item.id); setName("");setRole("Field technician");setStatus("free");setTask("");setPhone("");setShowAdd(false);
   }
+  function addTicket(event:FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if(!ticketTitle.trim())return;
+    const nextNumber=1001+tickets.length;
+    const item:Ticket={
+      id:`TK-${nextNumber}`,
+      title:ticketTitle.trim(),
+      location:ticketLocation.trim()||"North District Site",
+      assignee:ticketAssignee.trim()||"Unassigned",
+      status:ticketStatus,
+      priority:ticketPriority,
+      created:"Just now"
+    };
+    setTickets(old=>[item,...old]);
+    setSelectedTicketId(item.id);
+    setTicketTitle("");setTicketLocation("");setTicketAssignee("");setTicketStatus("open");setTicketPriority("Medium");
+    setShowTicketAdd(false);
+  }
   function removeEmployee(id:string) {
     if(!window.confirm("Remove this employee from the site?")) return;
     setEmployees(old=>old.filter(e=>e.id!==id)); if(selectedId===id)setSelectedId(null);
@@ -206,8 +252,9 @@ export default function App() {
     <aside className="sidebar">
       <div className="brand"><div className="brand-mark"><HardHat size={21}/></div><div><strong>fieldboard</strong><span>SITE OPERATIONS</span></div></div>
       <div className="workspace-label">WORKSPACE</div>
-      <button className="nav-item active"><LayoutDashboard size={18}/>Overview</button>
-      <button className="nav-item" onClick={()=>setFilter("all")}><Users size={18}/>Employees <span className="nav-count">{employees.length}</span></button>
+      <button className={`nav-item ${activeTab==="overview"?"active":""}`} onClick={()=>setActiveTab("overview")}><LayoutDashboard size={18}/>Overview</button>
+      <button className={`nav-item ${activeTab==="tickets"?"active":""}`} onClick={()=>setActiveTab("tickets")}><ClipboardList size={18}/>Tickets</button>
+      {activeTab==="overview"&&<button className="nav-item" onClick={()=>{setFilter("all");}}><Users size={18}/>Employees <span className="nav-count">{employees.length}</span></button>}
       <button className="nav-item" onClick={()=>setShowGuide(true)}><ClipboardList size={18}/>Activity guide</button>
       <div className="sidebar-spacer"/>
       <div className="site-card"><div className="site-card-icon"><MapPin size={17}/></div><div><strong>North District Site</strong><span>Project · ND-024</span></div><MoreHorizontal size={18} className="muted-icon"/></div>
@@ -217,14 +264,34 @@ export default function App() {
 
     <main className="main-content">
       <header className="topbar"><div className="breadcrumbs"><span>Projects</span><span className="crumb-slash">/</span><strong>North District Site</strong></div><div className="topbar-right"><div className="live-indicator"><span/>Local workspace</div><button className="icon-button" aria-label="Help" onClick={()=>setShowGuide(true)}><CircleHelp size={19}/></button><div className="avatar manager top-avatar">M</div></div></header>
-      <section className="page-heading"><div><div className="eyebrow"><span className="eyebrow-dot"/>PROJECT OVERVIEW</div><h1>Site workforce</h1><p>Monitor your team and manage assignments across the site.</p></div><button className="primary-button" onClick={()=>setShowAdd(true)}><Plus size={17}/>Add employee</button></section>
+      <section className="page-heading"><div><div className="eyebrow"><span className="eyebrow-dot"/>{activeTab==="tickets"?"TICKET OVERVIEW":"PROJECT OVERVIEW"}</div><h1>{activeTab==="tickets"?"Site tickets":"Site workforce"}</h1><p>{activeTab==="tickets"?"Review and manage assignments across the site.":"Monitor your team and manage assignments across the site."}</p></div><button className="primary-button" onClick={()=>activeTab==="tickets" ? setShowTicketAdd(true) : setShowAdd(true)}><Plus size={17}/>{activeTab==="tickets"?"Add ticket":"Add employee"}</button></section>
 
-      <section className="stats-grid" aria-label="Employee status summary">
+      {activeTab==="overview"&&<section className="stats-grid" aria-label="Employee status summary">
         <button className={`stat-card total ${filter==="all"?"chosen":""}`} onClick={()=>setFilter("all")}><div className="stat-top"><span>Total employees</span><div className="stat-icon slate"><Users size={17}/></div></div><div className="stat-number">{counts.all}</div><div className="stat-foot">On this site</div></button>
         {STATUSES.map(s=><button key={s} className={`stat-card ${filter===s?"chosen":""}`} onClick={()=>setFilter(filter===s?"all":s)}><div className="stat-top"><span>{STATUS_META[s].label}</span><i className="status-dot" style={{background:STATUS_META[s].color}}/></div><div className="stat-number">{counts[s]}</div><div className="stat-foot">{s==="free"?"Ready for assignment":"Currently assigned"}</div></button>)}
-      </section>
+      </section>}
 
-      <section className="map-section">
+      {activeTab==="tickets"&&<><section className="stats-grid" aria-label="Ticket status summary">
+        <button className={`stat-card total ${ticketFilter==="all"?"chosen":""}`} onClick={()=>setTicketFilter("all")}><div className="stat-top"><span>Total tickets</span><div className="stat-icon slate"><ClipboardList size={17}/></div></div><div className="stat-number">{tickets.length}</div><div className="stat-foot">At this site</div></button>
+        {TICKET_STATUSES.map(status=><button key={status} className={`stat-card ${ticketFilter===status?"chosen":""}`} onClick={()=>setTicketFilter(ticketFilter===status?"all":status)}><div className="stat-top"><span>{TICKET_STATUS_META[status].label}</span><i className="status-dot" style={{background:TICKET_STATUS_META[status].color}}/></div><div className="stat-number">{tickets.filter(ticket=>ticket.status===status).length}</div><div className="stat-foot">{status==="resolved"?"Completed":"Requires attention"}</div></button>)}
+      </section>
+      <section className="tickets-section">
+        <div className="section-heading"><div><div className="section-title-row"><h2>Tickets</h2><span className="map-live"><i/>LIVE VIEW</span></div><p>Manage active requests and assignments across the site.</p></div><div className="map-actions"><button className="secondary-button" onClick={()=>setTicketFilter("all")}><SlidersHorizontal size={16}/>Reset filters</button></div></div>
+        <div className="ticket-grid">{visibleTickets.map(ticket=><button key={ticket.id} className={`ticket-card ${selectedTicketId===ticket.id?"ticket-selected":""}`} onClick={()=>setSelectedTicketId(ticket.id)}>
+          <div className="ticket-card-top"><strong>{ticket.id}</strong><span className="ticket-status" style={{background:TICKET_STATUS_META[ticket.status].soft,color:TICKET_STATUS_META[ticket.status].color}}>{TICKET_STATUS_META[ticket.status].label}</span></div>
+          <h3>{ticket.title}</h3>
+          <div className="ticket-location"><MapPin size={14}/>{ticket.location}</div>
+          <div className="ticket-card-footer"><span>{ticket.assignee}</span><b className={`priority-${ticket.priority.toLowerCase()}`}>{ticket.priority}</b></div>
+        </button>)}</div>
+      </section>
+      {selectedTicket&&<section className="ticket-details-card">
+        <div className="ticket-details-heading"><div><label>SELECTED TICKET</label><strong>{selectedTicket.id}</strong></div><span className="ticket-status" style={{background:TICKET_STATUS_META[selectedTicket.status].soft,color:TICKET_STATUS_META[selectedTicket.status].color}}>{TICKET_STATUS_META[selectedTicket.status].label}</span></div>
+        <div className="ticket-details-title"><strong>{selectedTicket.title}</strong><span><MapPin size={13}/>{selectedTicket.location}</span></div>
+        <div className="ticket-details-field"><label>ASSIGNEE</label><strong>{selectedTicket.assignee}</strong></div>
+        <div className="ticket-details-field"><label>STATUS</label><select value={selectedTicket.status} onChange={event=>setTickets(old=>old.map(ticket=>ticket.id===selectedTicket.id?{...ticket,status:event.target.value as TicketStatus}:ticket))}>{TICKET_STATUSES.map(status=><option key={status} value={status}>{TICKET_STATUS_META[status].label}</option>)}</select></div>
+      </section>}</>}
+
+      {activeTab==="overview"&&<section className="map-section">
         <div className="section-heading"><div><div className="section-title-row"><h2>Live site map</h2><span className="map-live"><i/>LIVE VIEW</span></div><p>Drag employee markers to update their position.</p></div><div className="map-actions"><button className="secondary-button" onClick={()=>{setFilter("all");setSearch("");}}><SlidersHorizontal size={16}/>Reset filters</button><button className="secondary-button compact" onClick={()=>setShowGuide(true)}><ArrowDownUp size={16}/></button></div></div>
         <div className="map-layout">
           <div className="site-map" ref={mapRef} onPointerUp={()=>{dragging.current=null;}} onPointerLeave={()=>{dragging.current=null;}}>
@@ -252,9 +319,9 @@ export default function App() {
             <div className="panel-footer"><ShieldCheck size={15}/>Employee positions are saved in this browser.</div>
           </aside>
         </div>
-      </section>
+      </section>}
 
-      {selected&&<section className="details-card">
+      {activeTab==="overview"&&selected&&<section className="details-card">
         <div className="details-identity"><div className="avatar details-avatar" style={{background:STATUS_META[selected.status].soft,color:STATUS_META[selected.status].color}}>{initials(selected.name)}</div><div><strong>{selected.name}</strong><span>{selected.role}</span></div></div>
         <div className="details-task"><label>CURRENT TASK</label><strong>{selected.task||"No task assigned"}</strong></div><div className="details-task"><label>CONTACT</label><strong>{selected.phone||"Not provided"}</strong></div>
         <div className="details-status-actions">
@@ -273,6 +340,16 @@ export default function App() {
       <label>Phone number<input value={phone} onChange={e=>setPhone(e.target.value)} placeholder="+1 555 0100"/></label>
       <label>Initial status<select value={status} onChange={e=>setStatus(e.target.value as EmployeeStatus)}>{STATUSES.map(s=><option key={s} value={s}>{STATUS_META[s].label}</option>)}</select></label>
       <div className="modal-actions"><button type="button" className="secondary-button" onClick={()=>setShowAdd(false)}>Cancel</button><button type="submit" className="primary-button"><Plus size={16}/>Add to site</button></div>
+    </form></div>}
+
+    {showTicketAdd&&<div className="modal-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)setShowTicketAdd(false);}}><form className="modal" onSubmit={addTicket}>
+      <div className="modal-heading"><div><label className="modal-kicker">TICKET MANAGEMENT</label><h2>Add ticket</h2><p>Create a new assignment for the site team.</p></div><button type="button" className="icon-button" onClick={()=>setShowTicketAdd(false)}><X size={19}/></button></div>
+      <label>Ticket title<input autoFocus required value={ticketTitle} onChange={e=>setTicketTitle(e.target.value)} placeholder="Describe the issue"/></label>
+      <label>Location<input value={ticketLocation} onChange={e=>setTicketLocation(e.target.value)} placeholder="e.g. Room 2 · Bay 4"/></label>
+      <label>Assignee<input value={ticketAssignee} onChange={e=>setTicketAssignee(e.target.value)} placeholder="Employee name"/></label>
+      <label>Status<select value={ticketStatus} onChange={e=>setTicketStatus(e.target.value as TicketStatus)}>{TICKET_STATUSES.map(status=><option key={status} value={status}>{TICKET_STATUS_META[status].label}</option>)}</select></label>
+      <label>Priority<select value={ticketPriority} onChange={e=>setTicketPriority(e.target.value as "Low"|"Medium"|"High")}><option>Low</option><option>Medium</option><option>High</option></select></label>
+      <div className="modal-actions"><button type="button" className="secondary-button" onClick={()=>setShowTicketAdd(false)}>Cancel</button><button type="submit" className="primary-button"><Plus size={16}/>Add ticket</button></div>
     </form></div>}
 
     {selectedTool&&!editingToolTask&&<div className="modal-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)setSelectedTool(null);}}><div className="modal">

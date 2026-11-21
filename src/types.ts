@@ -37,6 +37,18 @@ export type CompletedToolTasks = Record<string, string[]>;
 export type ToolStatuses = Record<string, ToolStatus>;
 export type DirectoryTasks = Record<string, Record<string, string[]>>;
 
+export type TicketStatus = "open" | "assigned" | "in-progress" | "resolved";
+
+export interface Ticket {
+  id: string;
+  title: string;
+  location: string;
+  assignee: string;
+  status: TicketStatus;
+  priority: "Low" | "Medium" | "High";
+  created: string;
+}
+
 export interface ToolGroup {
   className: string;
   location: string;
