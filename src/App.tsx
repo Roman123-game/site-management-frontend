@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { FormEvent, PointerEvent, CSSProperties } from "react";
-import { Activity, ArrowDownUp, Check, CircleHelp, ClipboardList, HardHat, LayoutDashboard, MapPin, MoreHorizontal, Plus, Search, Settings2, ShieldCheck, SlidersHorizontal, Trash2, Users, X } from "lucide-react";
+import { Activity, ArrowDownUp, Check, CircleHelp, ClipboardList, HardHat, LayoutDashboard, MapPin, MoreHorizontal, Package, Plus, Search, Settings2, ShieldCheck, SlidersHorizontal, Trash2, Users, X } from "lucide-react";
 import { DEFAULT_EMPLOYEES, STATUS_META } from "./types";
 import type {
   CompletedToolTasks,
@@ -53,6 +53,21 @@ const DEFAULT_TICKETS: Ticket[] = [
   {id:"TK-1003",title:"Replace damaged cable",toolNumber:"03",location:"Eng Room · Bay 4",assignee:"David Cohen",status:"open",priority:"High",created:"Yesterday, 16:10"},
   {id:"TK-1004",title:"Routine maintenance check",toolNumber:"04",location:"Gowning Room",assignee:"Michael Levy",status:"resolved",priority:"Low",created:"Yesterday, 13:30"},
   {id:"TK-1005",title:"Equipment installation",toolNumber:"05",location:"Storage Area",assignee:"Daniel Green",status:"assigned",priority:"Medium",created:"Nov 20, 11:15"}
+];
+type PartStatus = "ordered"|"shipped"|"received";
+const PART_STATUSES: PartStatus[] = ["ordered","shipped","received"];
+const PART_STATUS_META: Record<PartStatus,{label:string;color:string;soft:string}> = {
+  ordered:{label:"Ordered",color:"#f59e0b",soft:"#fff5df"},
+  shipped:{label:"Shipped",color:"#3b82f6",soft:"#eaf2ff"},
+  received:{label:"Received",color:"#10a779",soft:"#e5f7f0"}
+};
+interface PartOrder {
+  id:string; name:string; partNumber:string; quantity:string; supplier:string; toolNumber:string; status:PartStatus; expected:string;
+}
+const DEFAULT_PARTS: PartOrder[] = [
+  {id:"PR-2001",name:"Control panel fuse",partNumber:"PF-4401",quantity:"12",supplier:"TechSupply Co.",toolNumber:"01",status:"shipped",expected:"Nov 23"},
+  {id:"PR-2002",name:"Network switch module",partNumber:"NS-820",quantity:"3",supplier:"Network Depot",toolNumber:"02",status:"ordered",expected:"Nov 26"},
+  {id:"PR-2003",name:"Rubber drive belt",partNumber:"RB-318",quantity:"2",supplier:"Motion Parts",toolNumber:"04",status:"received",expected:"Nov 20"}
 ];
 const TOOL_GROUPS: ToolGroup[] = [
   { className: "tool-buildings", location: "west area", tools: [{ id: "site-a-01", name: "Tool 01", task: "Logistics Integrity", status: "under-warranty" }, { id: "site-a-02", name: "Tool 02", task: "Shipment Brackets", status: "in-shipment" }, { id: "site-a-03", name: "Tool 03", task: "Mechanical", status: "under-warranty" }] },
@@ -123,8 +138,19 @@ function loadDirectoryTasks(): DirectoryTasks {
 const initials = (name: string) => name.trim().split(/\s+/).slice(0,2).map(p => p[0]?.toUpperCase() ?? "").join("");
 export default function App() {
   const [employees,setEmployees] = useState<Employee[]>(loadEmployees);
-  const [activeTab,setActiveTab] = useState<"overview"|"tickets">("overview");
+  const [activeTab,setActiveTab] = useState<"overview"|"tickets"|"parts">("overview");
   const [tickets,setTickets] = useState<Ticket[]>(DEFAULT_TICKETS);
+  const [parts,setParts] = useState<PartOrder[]>(DEFAULT_PARTS);
+  const [partFilter,setPartFilter] = useState<"all"|PartStatus>("all");
+  const [partSearch,setPartSearch] = useState("");
+  const [showPartAdd,setShowPartAdd] = useState(false);
+  const [partName,setPartName] = useState("");
+  const [partNumber,setPartNumber] = useState("");
+  const [partQuantity,setPartQuantity] = useState("1");
+  const [partSupplier,setPartSupplier] = useState("");
+  const [partToolNumber,setPartToolNumber] = useState("");
+  const [partStatus,setPartStatus] = useState<PartStatus>("ordered");
+  const [partExpected,setPartExpected] = useState("");
   const [selectedTicketId,setSelectedTicketId] = useState<string|null>("TK-1001");
   const [ticketFilter,setTicketFilter] = useState<"all"|TicketStatus>("all");
   const [ticketSearch,setTicketSearch] = useState("");
@@ -169,6 +195,12 @@ export default function App() {
     return matchesStatus&&matchesTool;
   });
   const selectedTicket = tickets.find(ticket=>ticket.id===selectedTicketId) ?? null;
+  const visibleParts = parts.filter(part=>{
+    const matchesStatus=partFilter==="all"||part.status===partFilter;
+    const query=partSearch.trim().toLowerCase();
+    const matchesSearch=!query||[part.name,part.partNumber,part.supplier,part.toolNumber].some(value=>value.toLowerCase().includes(query));
+    return matchesStatus&&matchesSearch;
+  });
   const counts = useMemo(() => ({
     all:employees.length,
     install:employees.filter(e=>e.status==="install").length,
@@ -246,6 +278,23 @@ export default function App() {
     setTicketTitle("");setTicketToolNumber("");setTicketLocation("");setTicketAssignee("");setTicketStatus("open");setTicketPriority("Medium");
     setShowTicketAdd(false);
   }
+  function addPart(event:FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if(!partName.trim())return;
+    const item:PartOrder={
+      id:`PR-${2001+parts.length}`,
+      name:partName.trim(),
+      partNumber:partNumber.trim()||"N/A",
+      quantity:partQuantity.trim()||"1",
+      supplier:partSupplier.trim()||"Unspecified",
+      toolNumber:partToolNumber.trim()||"N/A",
+      status:partStatus,
+      expected:partExpected.trim()||"Not set"
+    };
+    setParts(old=>[item,...old]);
+    setPartName("");setPartNumber("");setPartQuantity("1");setPartSupplier("");setPartToolNumber("");setPartStatus("ordered");setPartExpected("");
+    setShowPartAdd(false);
+  }
   function removeEmployee(id:string) {
     if(!window.confirm("Remove this employee from the site?")) return;
     setEmployees(old=>old.filter(e=>e.id!==id)); if(selectedId===id)setSelectedId(null);
@@ -262,6 +311,7 @@ export default function App() {
       <div className="workspace-label">WORKSPACE</div>
       <button className={`nav-item ${activeTab==="overview"?"active":""}`} onClick={()=>setActiveTab("overview")}><LayoutDashboard size={18}/>Overview</button>
       <button className={`nav-item ${activeTab==="tickets"?"active":""}`} onClick={()=>setActiveTab("tickets")}><ClipboardList size={18}/>Tickets</button>
+      <button className={`nav-item ${activeTab==="parts"?"active":""}`} onClick={()=>setActiveTab("parts")}><Package size={18}/>Parts</button>
       <button className="nav-item" onClick={()=>setShowGuide(true)}><CircleHelp size={18}/>Activity guide</button>
       <div className="sidebar-spacer"/>
       <div className="site-card"><div className="site-card-icon"><MapPin size={17}/></div><div><strong>North District Site</strong><span>Project · ND-024</span></div><MoreHorizontal size={18} className="muted-icon"/></div>
@@ -271,7 +321,7 @@ export default function App() {
 
     <main className="main-content">
       <header className="topbar"><div className="breadcrumbs"><span>Projects</span><span className="crumb-slash">/</span><strong>North District Site</strong></div><div className="topbar-right"><div className="live-indicator"><span/>Local workspace</div><button className="icon-button" aria-label="Help" onClick={()=>setShowGuide(true)}><CircleHelp size={19}/></button><div className="avatar manager top-avatar">M</div></div></header>
-      <section className="page-heading"><div><div className="eyebrow"><span className="eyebrow-dot"/>{activeTab==="tickets"?"TICKET OVERVIEW":"PROJECT OVERVIEW"}</div><h1>{activeTab==="tickets"?"Site tickets":"Site workforce"}</h1><p>{activeTab==="tickets"?"Review and manage assignments across the site.":"Monitor your team and manage assignments across the site."}</p></div><button className="primary-button" onClick={()=>activeTab==="tickets" ? setShowTicketAdd(true) : setShowAdd(true)}><Plus size={17}/>{activeTab==="tickets"?"Add ticket":"Add employee"}</button></section>
+      <section className="page-heading"><div><div className="eyebrow"><span className="eyebrow-dot"/>{activeTab==="tickets"?"TICKET OVERVIEW":activeTab==="parts"?"PARTS OVERVIEW":"PROJECT OVERVIEW"}</div><h1>{activeTab==="tickets"?"Site tickets":activeTab==="parts"?"Ordered parts":"Site workforce"}</h1><p>{activeTab==="tickets"?"Review and manage assignments across the site.":activeTab==="parts"?"Track part orders, suppliers, and delivery status.":"Monitor your team and manage assignments across the site."}</p></div><button className="primary-button" onClick={()=>activeTab==="tickets"?setShowTicketAdd(true):activeTab==="parts"?setShowPartAdd(true):setShowAdd(true)}><Plus size={17}/>{activeTab==="tickets"?"Add ticket":activeTab==="parts"?"Add part":"Add employee"}</button></section>
 
       {activeTab==="overview"&&<section className="stats-grid" aria-label="Employee status summary">
         <button className={`stat-card total ${filter==="all"?"chosen":""}`} onClick={()=>setFilter("all")}><div className="stat-top"><span>Total employees</span><div className="stat-icon slate"><Users size={17}/></div></div><div className="stat-number">{counts.all}</div><div className="stat-foot">On this site</div></button>
@@ -300,6 +350,27 @@ export default function App() {
         <div className="ticket-details-field"><label>ASSIGNEE</label><strong>{selectedTicket.assignee}</strong></div>
         <div className="ticket-details-field"><label>STATUS</label><select value={selectedTicket.status} onChange={event=>setTickets(old=>old.map(ticket=>ticket.id===selectedTicket.id?{...ticket,status:event.target.value as TicketStatus}:ticket))}>{TICKET_STATUSES.map(status=><option key={status} value={status}>{TICKET_STATUS_META[status].label}</option>)}</select></div>
       </section>}</>}
+
+      {activeTab==="parts"&&<><section className="stats-grid parts-stats" aria-label="Part order status summary">
+        <button className={`stat-card part-stat-card total ${partFilter==="all"?"chosen":""}`} onClick={()=>setPartFilter("all")}><div className="stat-top"><span>Total orders</span><div className="stat-icon slate"><Package size={17}/></div></div><div className="stat-number">{parts.length}</div><div className="stat-foot">At this site</div></button>
+        {PART_STATUSES.map(status=><button key={status} className={`stat-card part-stat-card ${partFilter===status?"chosen":""}`} onClick={()=>setPartFilter(partFilter===status?"all":status)}><div className="stat-top"><span>{PART_STATUS_META[status].label}</span><i className="status-dot" style={{background:PART_STATUS_META[status].color}}/></div><div className="stat-number">{parts.filter(part=>part.status===status).length}</div><div className="stat-foot">{status==="received"?"Delivered":"Track order"}</div></button>)}
+      </section>
+      <section className="parts-section">
+        <div className="section-heading"><div><div className="section-title-row"><h2>Parts orders</h2><span className="map-live"><i/>LIVE VIEW</span></div><p>Monitor ordered components and delivery progress.</p></div></div>
+        <div className="ticket-toolbar"><label className="search-box ticket-search"><Search size={16}/><input aria-label="Search parts" value={partSearch} onChange={event=>setPartSearch(event.target.value)} placeholder="Search parts, supplier, or tool..."/></label><button className="secondary-button" onClick={()=>{setPartFilter("all");setPartSearch("");}}><SlidersHorizontal size={16}/>Reset filters</button></div>
+        <div className="parts-table" role="table" aria-label="Ordered parts">
+          <div className="parts-table-head" role="row"><span>Part</span><span>Supplier</span><span>Tool</span><span>Quantity</span><span>Expected</span><span>Status</span></div>
+          {visibleParts.map(part=><div className="parts-table-row" role="row" key={part.id}>
+            <div className="part-name"><div className="part-icon"><Package size={15}/></div><div><strong>{part.name}</strong><span>{part.id} · {part.partNumber}</span></div></div>
+            <strong className="part-supplier">{part.supplier}</strong>
+            <span>Tool {part.toolNumber}</span>
+            <span>{part.quantity}</span>
+            <span>{part.expected}</span>
+            <select className="part-status-select" value={part.status} onChange={event=>setParts(old=>old.map(item=>item.id===part.id?{...item,status:event.target.value as PartStatus}:item))} style={{background:PART_STATUS_META[part.status].soft,color:PART_STATUS_META[part.status].color,borderColor:PART_STATUS_META[part.status].soft}}>{PART_STATUSES.map(status=><option key={status} value={status}>{PART_STATUS_META[status].label}</option>)}</select>
+          </div>)}
+          {visibleParts.length===0&&<div className="empty-list">No parts match this search or filter.</div>}
+        </div>
+      </section></>}
 
       {activeTab==="overview"&&<section className="map-section">
         <div className="section-heading"><div><div className="section-title-row"><h2>Live site map</h2><span className="map-live"><i/>LIVE VIEW</span></div><p>Drag employee markers to update their position.</p></div><div className="map-actions"><button className="secondary-button" onClick={()=>{setFilter("all");setSearch("");}}><SlidersHorizontal size={16}/>Reset filters</button><button className="secondary-button compact" onClick={()=>setShowGuide(true)}><ArrowDownUp size={16}/></button></div></div>
@@ -361,6 +432,18 @@ export default function App() {
       <label>Status<select value={ticketStatus} onChange={e=>setTicketStatus(e.target.value as TicketStatus)}>{TICKET_STATUSES.map(status=><option key={status} value={status}>{TICKET_STATUS_META[status].label}</option>)}</select></label>
       <label>Priority<select value={ticketPriority} onChange={e=>setTicketPriority(e.target.value as "Low"|"Medium"|"High")}><option>Low</option><option>Medium</option><option>High</option></select></label>
       <div className="modal-actions"><button type="button" className="secondary-button" onClick={()=>setShowTicketAdd(false)}>Cancel</button><button type="submit" className="primary-button"><Plus size={16}/>Add ticket</button></div>
+    </form></div>}
+
+    {showPartAdd&&<div className="modal-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)setShowPartAdd(false);}}><form className="modal" onSubmit={addPart}>
+      <div className="modal-heading"><div><label className="modal-kicker">PARTS MANAGEMENT</label><h2>Add ordered part</h2><p>Track a new part order for the site.</p></div><button type="button" className="icon-button" onClick={()=>setShowPartAdd(false)}><X size={19}/></button></div>
+      <label>Part name<input autoFocus required value={partName} onChange={e=>setPartName(e.target.value)} placeholder="e.g. Control board"/></label>
+      <label>Part number<input value={partNumber} onChange={e=>setPartNumber(e.target.value)} placeholder="e.g. CB-2040"/></label>
+      <label>Quantity<input type="number" min="1" value={partQuantity} onChange={e=>setPartQuantity(e.target.value)}/></label>
+      <label>Supplier<input value={partSupplier} onChange={e=>setPartSupplier(e.target.value)} placeholder="Supplier name"/></label>
+      <label>Tool number<input value={partToolNumber} onChange={e=>setPartToolNumber(e.target.value)} placeholder="e.g. 01"/></label>
+      <label>Expected delivery<input value={partExpected} onChange={e=>setPartExpected(e.target.value)} placeholder="e.g. Nov 26"/></label>
+      <label>Status<select value={partStatus} onChange={e=>setPartStatus(e.target.value as PartStatus)}>{PART_STATUSES.map(status=><option key={status} value={status}>{PART_STATUS_META[status].label}</option>)}</select></label>
+      <div className="modal-actions"><button type="button" className="secondary-button" onClick={()=>setShowPartAdd(false)}>Cancel</button><button type="submit" className="primary-button"><Plus size={16}/>Add part</button></div>
     </form></div>}
 
     {selectedTool&&!editingToolTask&&<div className="modal-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)setSelectedTool(null);}}><div className="modal">
