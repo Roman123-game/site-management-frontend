@@ -157,7 +157,7 @@ button{cursor:pointer}
 .ticket-card-footer{display:flex;align-items:center;justify-content:space-between;border-top:1px solid #edf0f4;margin-top:12px;padding-top:10px;font-size:10px;color:#68778b}
 .ticket-card-footer b{font-size:9px}
 .priority-high{color:#ef4444}.priority-medium{color:#f59e0b}.priority-low{color:#10a779}
-.ticket-details-card{display:grid;grid-template-columns:150px minmax(0,1fr) 150px 150px;align-items:end;gap:18px;background:#fff;border:1px solid #e3e8ef;border-radius:10px;padding:14px 16px;min-height:83px}
+.ticket-details-card{display:grid;grid-template-columns:150px minmax(180px,1fr) 150px 150px 150px;align-items:end;gap:18px;background:#fff;border:1px solid #e3e8ef;border-radius:10px;padding:14px 16px;min-height:83px}
 .ticket-details-heading label,.ticket-details-field label{display:block;font-size:8px;letter-spacing:1px;color:#9aa4b1;font-weight:700;margin-bottom:6px}
 .ticket-details-heading strong{font-size:12px;color:#263449}
 .ticket-details-heading .ticket-status{float:right;margin-left:8px}
