@@ -45,7 +45,7 @@ const TICKET_STATUS_META: Record<TicketStatus,{label:string;color:string;soft:st
   open:{label:"Open",color:"#ef4444",soft:"#feecec"},
   assigned:{label:"Assigned",color:"#3b82f6",soft:"#eaf2ff"},
   "in-progress":{label:"In progress",color:"#f59e0b",soft:"#fff5df"},
-  resolved:{label:"Resolved",color:"#10a779",soft:"#e5f7f0"}
+  resolved:{label:"Closed",color:"#10a779",soft:"#e5f7f0"}
 };
 const DEFAULT_TICKETS: Ticket[] = [
   {id:"TK-1001",title:"Faulty panel connection",toolNumber:"01",location:"Room 1 · Panel A",assignee:"John Smith",status:"in-progress",priority:"High",created:"Today, 09:20"},
