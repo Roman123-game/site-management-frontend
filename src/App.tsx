@@ -328,7 +328,7 @@ export default function App() {
         {STATUSES.map(s=><button key={s} className={`stat-card ${filter===s?"chosen":""}`} onClick={()=>setFilter(filter===s?"all":s)}><div className="stat-top"><span>{STATUS_META[s].label}</span><i className="status-dot" style={{background:STATUS_META[s].color}}/></div><div className="stat-number">{counts[s]}</div><div className="stat-foot">{s==="free"?"Ready for assignment":"Currently assigned"}</div></button>)}
       </section>}
 
-      {activeTab==="tickets"&&<><section className="stats-grid" aria-label="Ticket status summary">
+      {activeTab==="tickets"&&<><section className="stats-grid ticket-stats-grid" aria-label="Ticket status summary">
         <button className={`stat-card ticket-stat-card total ${ticketFilter==="all"?"chosen":""}`} onClick={()=>setTicketFilter("all")}><div className="stat-top"><span>Total tickets</span><div className="stat-icon slate"><ClipboardList size={17}/></div></div><div className="stat-number">{tickets.length}</div><div className="stat-foot">At this site</div></button>
         {TICKET_STATUSES.map(status=><button key={status} className={`stat-card ticket-stat-card ${ticketFilter===status?"chosen":""}`} onClick={()=>setTicketFilter(ticketFilter===status?"all":status)}><div className="stat-top"><span>{TICKET_STATUS_META[status].label}</span><i className="status-dot" style={{background:TICKET_STATUS_META[status].color}}/></div><div className="stat-number">{tickets.filter(ticket=>ticket.status===status).length}</div><div className="stat-foot">{status==="resolved"?"Completed":"Requires attention"}</div></button>)}
       </section>
